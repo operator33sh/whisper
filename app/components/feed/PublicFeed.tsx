@@ -10,6 +10,7 @@ import { npubEncode } from "nostr-tools/nip19";
 import { useReplyCounts } from "@/app/hooks/useReplyCounts";
 import { timeAgo } from "@/app/lib/timeAgo";
 import PostReplies from "@/app/components/ui/PostReplies";
+import ReplyButton from "@/app/components/ui/ReplyButton";
 import type { Event } from "nostr-tools";
 
 export default function PublicFeed() {
@@ -68,7 +69,10 @@ export default function PublicFeed() {
             <span className="text-sm text-[#2d2d2d]/50 mt-2 block font-[family-name:var(--font-inter)]">
               {new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · {timeAgo(event.created_at)}
             </span>
-            <PostReplies eventId={event.id} count={reactions.get(event.id) ?? 0} />
+            <div className="flex items-center justify-between mt-2">
+              <PostReplies eventId={event.id} count={reactions.get(event.id) ?? 0} />
+              <ReplyButton eventId={event.id} eventPubkey={event.pubkey} />
+            </div>
           </li>
         ))}
         <li className="pt-4 pb-2">

@@ -7,6 +7,7 @@ import { useNostrContext } from "@/app/components/NostrProvider";
 import { useReplyCounts } from "@/app/hooks/useReplyCounts";
 import { timeAgo } from "@/app/lib/timeAgo";
 import PostReplies from "@/app/components/ui/PostReplies";
+import ReplyButton from "@/app/components/ui/ReplyButton";
 import Avatar from "@/app/components/ui/Avatar";
 import PostBody from "@/app/components/ui/PostBody";
 import { npubEncode } from "nostr-tools/nip19";
@@ -71,7 +72,10 @@ export default function PrivateFeed() {
               <span className="text-sm text-[#2d2d2d]/50 mt-2 block font-[family-name:var(--font-inter)]">
                 {new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · {timeAgo(event.created_at)}
               </span>
-              <PostReplies eventId={event.id} count={replyCounts.get(event.id) ?? 0} />
+              <div className="flex items-center justify-between mt-2">
+                <PostReplies eventId={event.id} count={replyCounts.get(event.id) ?? 0} />
+                <ReplyButton eventId={event.id} eventPubkey={event.pubkey} />
+              </div>
             </li>
           ))}
           <li className="pt-4 pb-2">
