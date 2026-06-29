@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Crimson_Pro, Inter } from "next/font/google";
+import { NostrProvider } from "@/app/components/NostrProvider";
+import NsecGate from "@/app/components/NsecGate";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -35,7 +37,11 @@ export default function RootLayout({
       lang="en"
       className={`${playfair.variable} ${crimson.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <NsecGate>
+          <NostrProvider>{children}</NostrProvider>
+        </NsecGate>
+      </body>
     </html>
   );
 }

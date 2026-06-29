@@ -1,44 +1,73 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useNostrFeed } from "@/app/hooks/useNostr";
-import { useFollows } from "@/app/hooks/useFollows";
+import { useFollows, getNsecPubkey } from "@/app/hooks/useFollows";
+import { useNostrContext } from "@/app/components/NostrProvider";
+import Avatar from "@/app/components/ui/Avatar";
+import { npubEncode } from "nostr-tools/nip19";
 import type { Event } from "nostr-tools";
 
 export default function PrivateFeed() {
+  const { pool } = useNostrContext();
   const follows = useFollows((s) => s.follows);
-  const setFollows = useFollows((s) => s.setFollows);
+  const loadFollows = useFollows((s) => s.loadFollows);
+  const unfollow = useFollows((s) => s.unfollow);
   const events = useNostrFeed({ kinds: [1], authors: follows, limit: 50 });
+  const [pending, setPending] = useState<string | null>(null);
 
-  function unfollow(pubkey: string) {
-    setFollows(follows.filter((f) => f !== pubkey));
+  async function handleUnfollow(pubkey: string) {
+    setPending(pubkey);
+    try {
+      await unfollow(pool, pubkey);
+    } catch (e) {
+      console.error("[PrivateFeed] unfollow failed:", e);
+    } finally {
+      setPending(null);
+    }
   }
+
+  useEffect(() => {
+    const pubkey = getNsecPubkey();
+    if (!pubkey) return;
+    console.log("[PrivateFeed] loading follows for", pubkey);
+    loadFollows(pool, pubkey);
+  }, [pool, loadFollows]);
 
   return (
     <section>
       <h2 className="text-2xl font-semibold mb-6">Following</h2>
-      <ul className="space-y-4 mb-10">
-        {follows.map((pubkey) => (
-          <li key={pubkey} className="flex items-center justify-between font-[family-name:var(--font-inter)]">
-            <span className="text-sm truncate max-w-xs">{pubkey}</span>
-            <button
-              onClick={() => unfollow(pubkey)}
-              className="text-xs ml-4 px-3 py-1 border border-[#2d2d2d]/30 rounded hover:bg-[#2d2d2d] hover:text-[#f9f9f7] transition-colors"
-            >
-              Unfollow
-            </button>
-          </li>
-        ))}
-      </ul>
-      <ul className="space-y-8">
-        {events.map((event: Event) => (
-          <li key={event.id} className="leading-relaxed">
-            <p className="break-words">{event.content}</p>
-            <span className="text-sm text-[#2d2d2d]/50 mt-2 block font-[family-name:var(--font-inter)]">
-              {new Date(event.created_at * 1000).toLocaleDateString("en-GB")}
-            </span>
-          </li>
-        ))}
-      </ul>
+      {follows.length === 0 ? (
+        <p className="text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">
+          Not following anyone yet.
+        </p>
+      ) : (
+        <ul className="space-y-8">
+          {events.map((event: Event) => (
+            <li key={event.id} className="leading-relaxed">
+              <div className="flex items-center justify-between gap-4 mb-2">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Avatar pubkey={event.pubkey} />
+                  <span className="text-sm text-[#2d2d2d]/40 truncate font-[family-name:var(--font-inter)]">
+                    {npubEncode(event.pubkey)}
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleUnfollow(event.pubkey)}
+                  disabled={pending === event.pubkey}
+                  className="shrink-0 bg-white text-[#2d2d2d] border border-[#2d2d2d] text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] hover:bg-[#f0f0ee] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {pending === event.pubkey ? "Unfollowing…" : "Unfollow"}
+                </button>
+              </div>
+              <p className="break-words">{event.content}</p>
+              <span className="text-sm text-[#2d2d2d]/50 mt-2 block font-[family-name:var(--font-inter)]">
+                {new Date(event.created_at * 1000).toLocaleDateString("en-GB")}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }
