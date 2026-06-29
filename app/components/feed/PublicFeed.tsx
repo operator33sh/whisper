@@ -4,9 +4,8 @@ import { useState } from "react";
 import { useNostrFeed } from "@/app/hooks/useNostr";
 import { useFollows } from "@/app/hooks/useFollows";
 import { useNostrContext } from "@/app/components/NostrProvider";
-import Avatar from "@/app/components/ui/Avatar";
 import PostBody from "@/app/components/ui/PostBody";
-import { npubEncode } from "nostr-tools/nip19";
+import UserMeta from "@/app/components/ui/UserMeta";
 import { useReplyCounts } from "@/app/hooks/useReplyCounts";
 import { timeAgo } from "@/app/lib/timeAgo";
 import PostReplies from "@/app/components/ui/PostReplies";
@@ -50,11 +49,8 @@ export default function PublicFeed() {
       <ul className="space-y-8 overflow-y-auto flex-1 pr-2">
         {filtered.map((event: Event) => (
           <li key={event.id} className="leading-relaxed">
-            <div className="flex items-center gap-3 mb-2">
-              <Avatar pubkey={event.pubkey} />
-              <span className="text-sm text-[#2d2d2d]/40 truncate font-[family-name:var(--font-inter)]">
-                {npubEncode(event.pubkey)}
-              </span>
+            <div className="mb-2">
+              <UserMeta pubkey={event.pubkey} />
             </div>
             <div className="flex items-start justify-between gap-4">
               <PostBody content={event.content} />

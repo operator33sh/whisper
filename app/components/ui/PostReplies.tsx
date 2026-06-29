@@ -5,9 +5,8 @@ import { useNostrContext } from "@/app/components/NostrProvider";
 import { useFollows } from "@/app/hooks/useFollows";
 import { RELAYS } from "@/app/lib/nostr";
 import { timeAgo } from "@/app/lib/timeAgo";
-import Avatar from "@/app/components/ui/Avatar";
 import PostBody from "@/app/components/ui/PostBody";
-import { npubEncode } from "nostr-tools/nip19";
+import UserMeta from "@/app/components/ui/UserMeta";
 import type { Event, Filter } from "nostr-tools";
 
 interface Props {
@@ -94,12 +93,7 @@ export default function PostReplies({ eventId, count }: Props) {
             replies.map((reply) => (
               <li key={reply.id} className="leading-relaxed">
                 <div className="flex items-center justify-between gap-4 mb-1">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Avatar pubkey={reply.pubkey} />
-                    <span className="text-xs text-[#2d2d2d]/40 truncate font-[family-name:var(--font-inter)]">
-                      {npubEncode(reply.pubkey)}
-                    </span>
-                  </div>
+                  <UserMeta pubkey={reply.pubkey} size={24} />
                   <FollowToggle pubkey={reply.pubkey} />
                 </div>
                 <PostBody content={reply.content} />

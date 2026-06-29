@@ -8,9 +8,8 @@ import { useReplyCounts } from "@/app/hooks/useReplyCounts";
 import { timeAgo } from "@/app/lib/timeAgo";
 import PostReplies from "@/app/components/ui/PostReplies";
 import ReplyButton from "@/app/components/ui/ReplyButton";
-import Avatar from "@/app/components/ui/Avatar";
 import PostBody from "@/app/components/ui/PostBody";
-import { npubEncode } from "nostr-tools/nip19";
+import UserMeta from "@/app/components/ui/UserMeta";
 import type { Event } from "nostr-tools";
 
 export default function PrivateFeed() {
@@ -54,12 +53,7 @@ export default function PrivateFeed() {
           {events.filter((e: Event) => follows.includes(e.pubkey)).map((event: Event) => (
             <li key={event.id} className="leading-relaxed">
               <div className="flex items-center justify-between gap-4 mb-2">
-                <div className="flex items-center gap-3 min-w-0">
-                  <Avatar pubkey={event.pubkey} />
-                  <span className="text-sm text-[#2d2d2d]/40 truncate font-[family-name:var(--font-inter)]">
-                    {npubEncode(event.pubkey)}
-                  </span>
-                </div>
+                <UserMeta pubkey={event.pubkey} />
                 <button
                   onClick={() => handleUnfollow(event.pubkey)}
                   disabled={pending === event.pubkey}
