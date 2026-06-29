@@ -5,17 +5,26 @@ import { useNostrContext } from "@/app/components/NostrProvider";
 import { RELAY_URL } from "@/app/lib/nostr";
 import type { Event } from "nostr-tools";
 
-export function useReactions(): Map<string, number> {
+export function useReplyCounts(): Map<string, number> {
   const { pool } = useNostrContext();
   const [counts, setCounts] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
-    console.log("[useReactions] subscribing to kind:7 events");
+    console.log("[useReplyCounts] subscribing to kind:1 replies");
 
-    const sub = pool.subscribeMany([RELAY_URL], [{ kinds: [7], limit: 1000 }], {
+    let received = 0;
+
+    const sub = pool.subscribeMany([RELAY_URL], [{ kinds: [1], limit: 1000 }], {
       onevent(event: Event) {
-        const targetId = event.tags.findLast((t) => t[0] === "e")?.[1];
-        if (!targetId) return;
+        const eTags = event.tags.filter((t) => t[0] === "e");
+        if (eTags.length === 0) return;
+
+        const targetId = eTags.at(-1)![1];
+
+        received++;
+        if (received <= 3) {
+          console.log("[useReplyCounts] sample reply", { id: event.id, eTags, targetId });
+        }
 
         setCounts((prev) => {
           const next = new Map(prev);
@@ -26,7 +35,7 @@ export function useReactions(): Map<string, number> {
     });
 
     return () => {
-      console.log("[useReactions] closing subscription");
+      console.log("[useReplyCounts] closing subscription");
       sub.close();
     };
   }, [pool]);

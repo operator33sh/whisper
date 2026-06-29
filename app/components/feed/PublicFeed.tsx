@@ -6,13 +6,13 @@ import { useFollows } from "@/app/hooks/useFollows";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import Avatar from "@/app/components/ui/Avatar";
 import { npubEncode } from "nostr-tools/nip19";
-import { useReactions } from "@/app/hooks/useReactions";
+import { useReplyCounts } from "@/app/hooks/useReplyCounts";
 import type { Event } from "nostr-tools";
 
 export default function PublicFeed() {
   const { pool } = useNostrContext();
   const events = useNostrFeed({ kinds: [1], limit: 1000 });
-  const reactions = useReactions();
+  const reactions = useReplyCounts();
   const follows = useFollows((s) => s.follows);
   const follow = useFollows((s) => s.follow);
   const [pending, setPending] = useState<string | null>(null);
@@ -31,8 +31,14 @@ export default function PublicFeed() {
   const filtered = events.filter(
     (e: Event) =>
       !follows.includes(e.pubkey) &&
-      e.tags.some((t) => t[0] === "e")
+      (reactions.get(e.id) ?? 0) > 0
   );
+
+  if (events.length > 0 && reactions.size > 0 && filtered.length === 0) {
+    console.log("[PublicFeed] crosscheck miss — posts:", events.length, "reaction entries:", reactions.size);
+    console.log("[PublicFeed] sample post id:", events[0].id);
+    console.log("[PublicFeed] sample reaction key:", [...reactions.keys()][0]);
+  }
 
   return (
     <section>
@@ -61,7 +67,7 @@ export default function PublicFeed() {
                 {new Date(event.created_at * 1000).toLocaleDateString("en-GB")}
               </span>
               <span className="text-sm text-[#2d2d2d]/50">
-                {reactions.get(event.id) ?? 0} reactions
+                {reactions.get(event.id) ?? 0} replies
               </span>
             </div>
           </li>
