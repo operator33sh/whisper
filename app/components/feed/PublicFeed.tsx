@@ -9,6 +9,7 @@ import PostContent from "@/app/components/ui/PostContent";
 import { npubEncode } from "nostr-tools/nip19";
 import { useReplyCounts } from "@/app/hooks/useReplyCounts";
 import { timeAgo } from "@/app/lib/timeAgo";
+import PostReplies from "@/app/components/ui/PostReplies";
 import type { Event } from "nostr-tools";
 
 export default function PublicFeed() {
@@ -64,14 +65,10 @@ export default function PublicFeed() {
                 {pending === event.pubkey ? "Following…" : "Follow"}
               </button>
             </div>
-            <div className="flex items-center gap-4 mt-2 font-[family-name:var(--font-inter)]">
-              <span className="text-sm text-[#2d2d2d]/50">
-                {new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · {timeAgo(event.created_at)}
-              </span>
-              <span className="text-sm text-[#2d2d2d]/50">
-                {reactions.get(event.id) ?? 0} replies
-              </span>
-            </div>
+            <span className="text-sm text-[#2d2d2d]/50 mt-2 block font-[family-name:var(--font-inter)]">
+              {new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · {timeAgo(event.created_at)}
+            </span>
+            <PostReplies eventId={event.id} count={reactions.get(event.id) ?? 0} />
           </li>
         ))}
       </ul>
