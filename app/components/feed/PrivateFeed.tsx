@@ -8,7 +8,7 @@ import { useReplyCounts } from "@/app/hooks/useReplyCounts";
 import { timeAgo } from "@/app/lib/timeAgo";
 import PostReplies from "@/app/components/ui/PostReplies";
 import Avatar from "@/app/components/ui/Avatar";
-import PostContent from "@/app/components/ui/PostContent";
+import PostBody from "@/app/components/ui/PostBody";
 import { npubEncode } from "nostr-tools/nip19";
 import type { Event } from "nostr-tools";
 
@@ -42,14 +42,14 @@ export default function PrivateFeed() {
   }, [pool, loadFollows]);
 
   return (
-    <section>
+    <section className="h-full flex flex-col overflow-hidden">
       <h2 className="text-2xl font-semibold mb-6">Following</h2>
       {follows.length === 0 ? (
         <p className="text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">
           Not following anyone yet.
         </p>
       ) : (
-        <ul className="space-y-8">
+        <ul className="space-y-8 overflow-y-auto flex-1 pr-2">
           {events.filter((e: Event) => follows.includes(e.pubkey)).map((event: Event) => (
             <li key={event.id} className="leading-relaxed">
               <div className="flex items-center justify-between gap-4 mb-2">
@@ -67,7 +67,7 @@ export default function PrivateFeed() {
                   {pending === event.pubkey ? "Unfollowing…" : "Unfollow"}
                 </button>
               </div>
-              <PostContent content={event.content} />
+              <PostBody content={event.content} />
               <span className="text-sm text-[#2d2d2d]/50 mt-2 block font-[family-name:var(--font-inter)]">
                 {new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · {timeAgo(event.created_at)}
               </span>

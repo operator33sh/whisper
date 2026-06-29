@@ -6,7 +6,7 @@ import { useFollows } from "@/app/hooks/useFollows";
 import { RELAYS } from "@/app/lib/nostr";
 import { timeAgo } from "@/app/lib/timeAgo";
 import Avatar from "@/app/components/ui/Avatar";
-import PostContent from "@/app/components/ui/PostContent";
+import PostBody from "@/app/components/ui/PostBody";
 import { npubEncode } from "nostr-tools/nip19";
 import type { Event, Filter } from "nostr-tools";
 
@@ -102,7 +102,7 @@ export default function PostReplies({ eventId, count }: Props) {
                   </div>
                   <FollowToggle pubkey={reply.pubkey} />
                 </div>
-                <PostContent content={reply.content} />
+                <PostBody content={reply.content} />
                 <span className="text-xs text-[#2d2d2d]/40 mt-1 block font-[family-name:var(--font-inter)]">
                   {new Date(reply.created_at * 1000).toLocaleDateString("en-GB")} · {timeAgo(reply.created_at)}
                 </span>

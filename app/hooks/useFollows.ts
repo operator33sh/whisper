@@ -11,7 +11,7 @@ const STORAGE_KEY = "whisper:nsec";
 interface FollowStore {
   follows: string[];
   setFollows: (pubkeys: string[]) => void;
-  loadFollows: (pool: SimplePool, pubkey: string) => Promise<void>;
+  loadFollows: (pool: SimplePool, pubkey: string) => void;
   follow: (pool: SimplePool, pubkey: string) => Promise<void>;
   unfollow: (pool: SimplePool, pubkey: string) => Promise<void>;
 }
@@ -21,25 +21,19 @@ export const useFollows = create<FollowStore>((set, get) => ({
 
   setFollows: (pubkeys) => set({ follows: pubkeys }),
 
-  loadFollows: async (pool: SimplePool, pubkey: string) => {
+  loadFollows: (pool: SimplePool, pubkey: string) => {
     console.log("[loadFollows] fetching kind:3 for", pubkey);
 
-    const event = await pool.get(RELAYS, {
-      kinds: [3],
-      authors: [pubkey],
+    const sub = pool.subscribeMany(RELAYS, [{ kinds: [3], authors: [pubkey], limit: 1 }], {
+      onevent(event: Event) {
+        const pubkeys = event.tags
+          .filter((t) => t[0] === "p")
+          .map((t) => t[1]);
+        console.log("[loadFollows] loaded", pubkeys.length, "follows");
+        set({ follows: pubkeys });
+        sub.close();
+      },
     });
-
-    if (!event) {
-      console.warn("[loadFollows] no kind:3 event found for", pubkey);
-      return;
-    }
-
-    const pubkeys = (event as Event).tags
-      .filter((t) => t[0] === "p")
-      .map((t) => t[1]);
-
-    console.log("[loadFollows] loaded", pubkeys.length, "follows");
-    set({ follows: pubkeys });
   },
 
   follow: async (pool: SimplePool, pubkey: string) => {

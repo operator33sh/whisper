@@ -5,7 +5,7 @@ import { useNostrFeed } from "@/app/hooks/useNostr";
 import { useFollows } from "@/app/hooks/useFollows";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import Avatar from "@/app/components/ui/Avatar";
-import PostContent from "@/app/components/ui/PostContent";
+import PostBody from "@/app/components/ui/PostBody";
 import { npubEncode } from "nostr-tools/nip19";
 import { useReplyCounts } from "@/app/hooks/useReplyCounts";
 import { timeAgo } from "@/app/lib/timeAgo";
@@ -44,9 +44,9 @@ export default function PublicFeed() {
   }
 
   return (
-    <section>
+    <section className="h-full flex flex-col overflow-hidden">
       <h2 className="text-2xl font-semibold mb-6">Feed</h2>
-      <ul className="space-y-8">
+      <ul className="space-y-8 overflow-y-auto flex-1 pr-2">
         {filtered.map((event: Event) => (
           <li key={event.id} className="leading-relaxed">
             <div className="flex items-center gap-3 mb-2">
@@ -56,7 +56,7 @@ export default function PublicFeed() {
               </span>
             </div>
             <div className="flex items-start justify-between gap-4">
-              <PostContent content={event.content} />
+              <PostBody content={event.content} />
               <button
                 onClick={() => handleFollow(event.pubkey)}
                 disabled={pending === event.pubkey}

@@ -6,8 +6,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const { logout } = useNsec();
 
   return (
-    <div className="min-h-screen px-6 py-12 max-w-5xl mx-auto">
-      <header className="flex items-center justify-between mb-10">
+    <div className="h-screen flex flex-col px-6 max-w-5xl mx-auto">
+      <header className="flex items-center justify-between py-8 shrink-0">
         <h1 className="text-4xl font-bold tracking-tight">Whisper</h1>
         <button
           onClick={logout}
@@ -16,7 +16,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           Logout
         </button>
       </header>
-      <main>{children}</main>
+      <main className="flex-1 overflow-hidden">{children}</main>
     </div>
   );
 }
