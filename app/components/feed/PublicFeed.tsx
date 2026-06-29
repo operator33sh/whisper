@@ -5,8 +5,10 @@ import { useNostrFeed } from "@/app/hooks/useNostr";
 import { useFollows } from "@/app/hooks/useFollows";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import Avatar from "@/app/components/ui/Avatar";
+import PostContent from "@/app/components/ui/PostContent";
 import { npubEncode } from "nostr-tools/nip19";
 import { useReplyCounts } from "@/app/hooks/useReplyCounts";
+import { timeAgo } from "@/app/lib/timeAgo";
 import type { Event } from "nostr-tools";
 
 export default function PublicFeed() {
@@ -53,7 +55,7 @@ export default function PublicFeed() {
               </span>
             </div>
             <div className="flex items-start justify-between gap-4">
-              <p className="break-words min-w-0">{event.content}</p>
+              <PostContent content={event.content} />
               <button
                 onClick={() => handleFollow(event.pubkey)}
                 disabled={pending === event.pubkey}
@@ -64,7 +66,7 @@ export default function PublicFeed() {
             </div>
             <div className="flex items-center gap-4 mt-2 font-[family-name:var(--font-inter)]">
               <span className="text-sm text-[#2d2d2d]/50">
-                {new Date(event.created_at * 1000).toLocaleDateString("en-GB")}
+                {new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · {timeAgo(event.created_at)}
               </span>
               <span className="text-sm text-[#2d2d2d]/50">
                 {reactions.get(event.id) ?? 0} replies

@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { RELAY_URL } from "@/app/lib/nostr";
+import { RELAYS } from "@/app/lib/nostr";
 import { finalizeEvent, getPublicKey } from "nostr-tools";
 import { decode } from "nostr-tools/nip19";
 import type { Event, SimplePool } from "nostr-tools";
@@ -22,17 +22,24 @@ export const useFollows = create<FollowStore>((set, get) => ({
   setFollows: (pubkeys) => set({ follows: pubkeys }),
 
   loadFollows: async (pool: SimplePool, pubkey: string) => {
-    const event = await pool.get([RELAY_URL], {
+    console.log("[loadFollows] fetching kind:3 for", pubkey);
+
+    const event = await pool.get(RELAYS, {
       kinds: [3],
       authors: [pubkey],
     });
 
-    if (event) {
-      const pubkeys = (event as Event).tags
-        .filter((t) => t[0] === "p")
-        .map((t) => t[1]);
-      set({ follows: pubkeys });
+    if (!event) {
+      console.warn("[loadFollows] no kind:3 event found for", pubkey);
+      return;
     }
+
+    const pubkeys = (event as Event).tags
+      .filter((t) => t[0] === "p")
+      .map((t) => t[1]);
+
+    console.log("[loadFollows] loaded", pubkeys.length, "follows");
+    set({ follows: pubkeys });
   },
 
   follow: async (pool: SimplePool, pubkey: string) => {
@@ -66,7 +73,7 @@ export const useFollows = create<FollowStore>((set, get) => ({
     console.log("[follow] publishing kind:3 event", event);
 
     try {
-      await Promise.any(pool.publish([RELAY_URL], event));
+      await Promise.any(pool.publish(RELAYS, event));
       console.log("[follow] relay acknowledged");
     } catch (e) {
       console.error("[follow] relay rejected or timed out:", e);
@@ -104,7 +111,7 @@ export const useFollows = create<FollowStore>((set, get) => ({
     console.log("[unfollow] publishing kind:3 event", event);
 
     try {
-      await Promise.any(pool.publish([RELAY_URL], event));
+      await Promise.any(pool.publish(RELAYS, event));
       console.log("[unfollow] relay acknowledged");
     } catch (e) {
       console.error("[unfollow] relay rejected or timed out:", e);

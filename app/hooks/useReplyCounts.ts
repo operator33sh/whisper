@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
-import { RELAY_URL } from "@/app/lib/nostr";
+import { RELAYS } from "@/app/lib/nostr";
 import type { Event } from "nostr-tools";
 
 export function useReplyCounts(): Map<string, number> {
@@ -14,7 +14,7 @@ export function useReplyCounts(): Map<string, number> {
 
     let received = 0;
 
-    const sub = pool.subscribeMany([RELAY_URL], [{ kinds: [1], limit: 1000 }], {
+    const sub = pool.subscribeMany(RELAYS, [{ kinds: [1], limit: 1000 }], {
       onevent(event: Event) {
         const eTags = event.tags.filter((t) => t[0] === "e");
         if (eTags.length === 0) return;

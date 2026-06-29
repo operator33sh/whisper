@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { SimplePool } from "nostr-tools";
-import { RELAY_URL } from "@/app/lib/nostr";
+import { RELAYS } from "@/app/lib/nostr";
 
 interface NostrContextValue {
   pool: SimplePool;
@@ -16,15 +16,18 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const ws = new WebSocket(RELAY_URL);
+    const sockets = RELAYS.map((url) => new WebSocket(url));
+    let openCount = 0;
 
-    ws.onopen = () => setConnected(true);
-    ws.onclose = () => setConnected(false);
-    ws.onerror = () => setConnected(false);
+    sockets.forEach((ws) => {
+      ws.onopen = () => { openCount++; setConnected(openCount > 0); };
+      ws.onclose = () => { openCount = Math.max(0, openCount - 1); setConnected(openCount > 0); };
+      ws.onerror = () => { openCount = Math.max(0, openCount - 1); setConnected(openCount > 0); };
+    });
 
     return () => {
-      ws.close();
-      pool.close([RELAY_URL]);
+      sockets.forEach((ws) => ws.close());
+      pool.close(RELAYS);
     };
   }, [pool]);
 

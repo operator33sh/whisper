@@ -1,5 +1,10 @@
 import { SimplePool } from "nostr-tools";
 
-export const RELAY_URL = "wss://relay.sovereignresonance.org";
+export const RELAYS = [
+  "wss://relay.sovereignresonance.org",
+  "wss://relay.damus.io",
+  "wss://nos.lol",
+  "wss://relay.snort.social",
+];
 
 export const pool = new SimplePool();

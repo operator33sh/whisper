@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
-import { RELAY_URL } from "@/app/lib/nostr";
+import { RELAYS } from "@/app/lib/nostr";
 import type { Event, Filter } from "nostr-tools";
 
 export function useNostrFeed(filter: Filter) {
@@ -20,7 +20,7 @@ export function useNostrFeed(filter: Filter) {
 
     console.log("[useNostrFeed] subscribing with filter", parsed);
 
-    const sub = pool.subscribeMany([RELAY_URL], [parsed], {
+    const sub = pool.subscribeMany(RELAYS, [parsed], {
       onevent(event: Event) {
         setEvents((prev) => {
           if (prev.find((e) => e.id === event.id)) return prev;
