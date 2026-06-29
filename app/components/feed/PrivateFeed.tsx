@@ -67,7 +67,7 @@ export default function PrivateFeed() {
                 {new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · {timeAgo(event.created_at)}
               </span>
               <div className="flex items-center justify-between mt-2">
-                <PostReplies eventId={event.id} count={replyCounts.get(event.id) ?? 0} />
+                <PostReplies eventId={event.id} count={replyCounts.get(event.id) ?? 0} replyCounts={replyCounts} />
                 <ReplyButton eventId={event.id} eventPubkey={event.pubkey} />
               </div>
             </li>

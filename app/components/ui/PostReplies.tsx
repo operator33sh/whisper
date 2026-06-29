@@ -12,6 +12,7 @@ import type { Event, Filter } from "nostr-tools";
 interface Props {
   eventId: string;
   count: number;
+  replyCounts?: Map<string, number>;
 }
 
 function FollowToggle({ pubkey }: { pubkey: string }) {
@@ -53,7 +54,7 @@ function FollowToggle({ pubkey }: { pubkey: string }) {
   );
 }
 
-export default function PostReplies({ eventId, count }: Props) {
+export default function PostReplies({ eventId, count, replyCounts }: Props) {
   const { pool } = useNostrContext();
   const [expanded, setExpanded] = useState(false);
   const [replies, setReplies] = useState<Event[]>([]);
@@ -90,18 +91,26 @@ export default function PostReplies({ eventId, count }: Props) {
           {replies.length === 0 ? (
             <li className="text-sm text-[#2d2d2d]/40 font-[family-name:var(--font-inter)]">Loading…</li>
           ) : (
-            replies.map((reply) => (
-              <li key={reply.id} className="leading-relaxed">
-                <div className="flex items-center justify-between gap-4 mb-1">
-                  <UserMeta pubkey={reply.pubkey} size={24} />
-                  <FollowToggle pubkey={reply.pubkey} />
-                </div>
-                <PostBody content={reply.content} />
-                <span className="text-xs text-[#2d2d2d]/40 mt-1 block font-[family-name:var(--font-inter)]">
-                  {new Date(reply.created_at * 1000).toLocaleDateString("en-GB")} · {timeAgo(reply.created_at)}
-                </span>
-              </li>
-            ))
+            replies.map((reply) => {
+              const replyCount = replyCounts?.get(reply.id) ?? 0;
+              return (
+                <li key={reply.id} className="leading-relaxed">
+                  <div className="flex items-center justify-between gap-4 mb-1">
+                    <UserMeta pubkey={reply.pubkey} size={24} />
+                    <FollowToggle pubkey={reply.pubkey} />
+                  </div>
+                  <PostBody content={reply.content} />
+                  <span className="text-xs text-[#2d2d2d]/40 mt-1 block font-[family-name:var(--font-inter)]">
+                    {new Date(reply.created_at * 1000).toLocaleDateString("en-GB")} · {timeAgo(reply.created_at)}
+                  </span>
+                  <PostReplies
+                    eventId={reply.id}
+                    count={replyCount}
+                    replyCounts={replyCounts}
+                  />
+                </li>
+              );
+            })
           )}
         </ul>
       )}

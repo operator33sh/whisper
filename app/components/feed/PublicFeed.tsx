@@ -49,11 +49,8 @@ export default function PublicFeed() {
       <ul className="space-y-8 overflow-y-auto flex-1 pr-2">
         {filtered.map((event: Event) => (
           <li key={event.id} className="leading-relaxed">
-            <div className="mb-2">
+            <div className="flex items-center justify-between gap-4 mb-2">
               <UserMeta pubkey={event.pubkey} />
-            </div>
-            <div className="flex items-start justify-between gap-4">
-              <PostBody content={event.content} />
               <button
                 onClick={() => handleFollow(event.pubkey)}
                 disabled={pending === event.pubkey}
@@ -62,11 +59,12 @@ export default function PublicFeed() {
                 {pending === event.pubkey ? "Following…" : "Follow"}
               </button>
             </div>
+            <PostBody content={event.content} />
             <span className="text-sm text-[#2d2d2d]/50 mt-2 block font-[family-name:var(--font-inter)]">
               {new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · {timeAgo(event.created_at)}
             </span>
             <div className="flex items-center justify-between mt-2">
-              <PostReplies eventId={event.id} count={reactions.get(event.id) ?? 0} />
+              <PostReplies eventId={event.id} count={reactions.get(event.id) ?? 0} replyCounts={reactions} />
               <ReplyButton eventId={event.id} eventPubkey={event.pubkey} />
             </div>
           </li>
