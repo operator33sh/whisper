@@ -17,7 +17,7 @@ export default function PrivateFeed() {
   const follows = useFollows((s) => s.follows);
   const loadFollows = useFollows((s) => s.loadFollows);
   const unfollow = useFollows((s) => s.unfollow);
-  const events = useNostrFeed({ kinds: [1], authors: follows, limit: 50 });
+  const { events, loadMore, loadingMore } = useNostrFeed({ kinds: [1], authors: follows, limit: 50 });
   const replyCounts = useReplyCounts();
   const [pending, setPending] = useState<string | null>(null);
 
@@ -74,6 +74,15 @@ export default function PrivateFeed() {
               <PostReplies eventId={event.id} count={replyCounts.get(event.id) ?? 0} />
             </li>
           ))}
+          <li className="pt-4 pb-2">
+            <button
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="w-full text-sm text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loadingMore ? "Loading…" : "Load more"}
+            </button>
+          </li>
         </ul>
       )}
     </section>

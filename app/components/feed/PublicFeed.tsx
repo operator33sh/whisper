@@ -14,7 +14,7 @@ import type { Event } from "nostr-tools";
 
 export default function PublicFeed() {
   const { pool } = useNostrContext();
-  const events = useNostrFeed({ kinds: [1], limit: 1000 });
+  const { events, loadMore, loadingMore } = useNostrFeed({ kinds: [1], limit: 1000 });
   const reactions = useReplyCounts();
   const follows = useFollows((s) => s.follows);
   const follow = useFollows((s) => s.follow);
@@ -71,6 +71,15 @@ export default function PublicFeed() {
             <PostReplies eventId={event.id} count={reactions.get(event.id) ?? 0} />
           </li>
         ))}
+        <li className="pt-4 pb-2">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="w-full text-sm text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loadingMore ? "Loading…" : "Load more"}
+          </button>
+        </li>
       </ul>
     </section>
   );
