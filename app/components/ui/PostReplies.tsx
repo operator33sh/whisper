@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
+import { useFollows } from "@/app/hooks/useFollows";
 import { RELAYS } from "@/app/lib/nostr";
 import { timeAgo } from "@/app/lib/timeAgo";
 import Avatar from "@/app/components/ui/Avatar";
@@ -12,6 +13,45 @@ import type { Event, Filter } from "nostr-tools";
 interface Props {
   eventId: string;
   count: number;
+}
+
+function FollowToggle({ pubkey }: { pubkey: string }) {
+  const { pool } = useNostrContext();
+  const follows = useFollows((s) => s.follows);
+  const follow = useFollows((s) => s.follow);
+  const unfollow = useFollows((s) => s.unfollow);
+  const [pending, setPending] = useState(false);
+
+  const isFollowing = follows.includes(pubkey);
+
+  async function toggle() {
+    setPending(true);
+    try {
+      if (isFollowing) {
+        await unfollow(pool, pubkey);
+      } else {
+        await follow(pool, pubkey);
+      }
+    } catch (e) {
+      console.error("[FollowToggle]", e);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <button
+      onClick={toggle}
+      disabled={pending}
+      className={`shrink-0 text-xs px-2 py-0.5 rounded font-[family-name:var(--font-inter)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+        isFollowing
+          ? "bg-white text-[#2d2d2d] border border-[#2d2d2d] hover:bg-[#f0f0ee]"
+          : "bg-black text-white hover:bg-[#2d2d2d]"
+      }`}
+    >
+      {pending ? "…" : isFollowing ? "Unfollow" : "Follow"}
+    </button>
+  );
 }
 
 export default function PostReplies({ eventId, count }: Props) {
@@ -38,8 +78,9 @@ export default function PostReplies({ eventId, count }: Props) {
   return (
     <div className="mt-2">
       <button
-        onClick={() => setExpanded((v) => !v)}
-        className="flex items-center gap-1 text-sm text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)]"
+        onClick={() => count > 0 && setExpanded((v) => !v)}
+        disabled={count === 0}
+        className="flex items-center gap-1 text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)] disabled:cursor-default enabled:hover:text-[#2d2d2d] enabled:transition-colors"
       >
         <span>{expanded ? "−" : "+"}</span>
         <span>{count} {count === 1 ? "reply" : "replies"}</span>
@@ -52,11 +93,14 @@ export default function PostReplies({ eventId, count }: Props) {
           ) : (
             replies.map((reply) => (
               <li key={reply.id} className="leading-relaxed">
-                <div className="flex items-center gap-2 mb-1">
-                  <Avatar pubkey={reply.pubkey} />
-                  <span className="text-xs text-[#2d2d2d]/40 truncate font-[family-name:var(--font-inter)]">
-                    {npubEncode(reply.pubkey)}
-                  </span>
+                <div className="flex items-center justify-between gap-4 mb-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Avatar pubkey={reply.pubkey} />
+                    <span className="text-xs text-[#2d2d2d]/40 truncate font-[family-name:var(--font-inter)]">
+                      {npubEncode(reply.pubkey)}
+                    </span>
+                  </div>
+                  <FollowToggle pubkey={reply.pubkey} />
                 </div>
                 <PostContent content={reply.content} />
                 <span className="text-xs text-[#2d2d2d]/40 mt-1 block font-[family-name:var(--font-inter)]">
