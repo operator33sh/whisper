@@ -19,7 +19,7 @@ export default function PostBody({ content }: { content: string }) {
     <div>
       <div
         ref={ref}
-        className={!expanded ? "max-h-32 overflow-hidden" : undefined}
+        className={!expanded ? "max-h-48 overflow-hidden" : undefined}
       >
         <PostContent content={content} />
       </div>

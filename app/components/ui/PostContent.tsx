@@ -1,25 +1,40 @@
+"use client";
+
+import NprofileLink from "@/app/components/ui/NprofileLink";
+
 const MEDIA_REGEX = /(https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|avif|mp4|webm|mov|ogg)(?:\?\S*)?)/gi;
 const VIDEO_REGEX = /\.(?:mp4|webm|mov|ogg)(?:\?|$)/i;
 const URL_REGEX = /(https?:\/\/[^\s]+)/g;
+const NPROFILE_REGEX = /(nostr:n(?:profile|pub)1[a-z0-9]+)/g;
 
 function renderTextWithLinks(text: string, keyPrefix: string) {
-  const parts = text.split(URL_REGEX);
-  return parts.map((part, i) => {
-    if (URL_REGEX.test(part)) {
-      URL_REGEX.lastIndex = 0;
-      return (
-        <a
-          key={`${keyPrefix}-${i}`}
-          href={part}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline text-[#2d2d2d]/70 hover:text-[#2d2d2d] transition-colors break-all"
-        >
-          {part}
-        </a>
-      );
+  // Split on nprofile/npub references first, then URLs within remaining text
+  const nparts = text.split(NPROFILE_REGEX);
+  return nparts.map((npart, ni) => {
+    if (NPROFILE_REGEX.test(npart)) {
+      NPROFILE_REGEX.lastIndex = 0;
+      return <NprofileLink key={`${keyPrefix}-n${ni}`} raw={npart} />;
     }
-    return part || null;
+
+    // Regular URL splitting within non-nprofile text
+    const uparts = npart.split(URL_REGEX);
+    return uparts.map((upart, ui) => {
+      if (URL_REGEX.test(upart)) {
+        URL_REGEX.lastIndex = 0;
+        return (
+          <a
+            key={`${keyPrefix}-n${ni}-u${ui}`}
+            href={upart}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-[#2d2d2d]/70 hover:text-[#2d2d2d] transition-colors break-all"
+          >
+            {upart}
+          </a>
+        );
+      }
+      return upart || null;
+    });
   });
 }
 
