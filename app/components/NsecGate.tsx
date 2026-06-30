@@ -47,7 +47,17 @@ export default function NsecGate({ children }: { children: React.ReactNode }) {
       {!unlocked && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-[#f9f9f7] rounded-lg p-10 w-full max-w-md flex flex-col gap-6">
-            <h2 className="text-2xl font-semibold">Enter your private key</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold">Enter your private key</h2>
+              <a
+                href="https://start.nostr.net/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)]"
+              >
+                Register
+              </a>
+            </div>
             <div className="flex flex-col gap-1">
               <input
                 type="password"
