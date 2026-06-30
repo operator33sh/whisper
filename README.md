@@ -1,5 +1,7 @@
 # Whisper
 
+![Whisper demo image](./docs/example.png)
+
 Whisper is a [Nostr](https://nostr.com) client built around a single principle: your attention belongs to you.
 
 Most social media is designed to maximise engagement — to keep you scrolling, reacting, and performing for an audience. Whisper is the opposite. It strips away follower counts, like buttons, algorithmic feeds, and all the other mechanics that turn communication into a competition for attention and validation.
