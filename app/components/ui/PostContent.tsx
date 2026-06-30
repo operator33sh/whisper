@@ -62,7 +62,7 @@ export default function PostContent({ content }: { content: string }) {
               key={i}
               src={part}
               alt=""
-              className="rounded max-w-full max-h-96 object-contain"
+              className="rounded max-w-full"
               loading="lazy"
             />
           );

@@ -3,10 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 import PostContent from "@/app/components/ui/PostContent";
 
-export default function PostBody({ content }: { content: string }) {
+const IMAGE_REGEX = /https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|avif)(?:\?\S*)?/i;
+
+interface Props {
+  content: string;
+  timestamp: string;
+}
+
+export default function PostBody({ content, timestamp }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [truncated, setTruncated] = useState(false);
   const [expanded, setExpanded] = useState(false);
+
+  const hasImage = IMAGE_REGEX.test(content);
 
   useEffect(() => {
     const el = ref.current;
@@ -19,18 +28,23 @@ export default function PostBody({ content }: { content: string }) {
     <div>
       <div
         ref={ref}
-        className={!expanded ? "max-h-48 overflow-hidden" : undefined}
+        className={!hasImage && !expanded ? "max-h-48 overflow-hidden" : undefined}
       >
         <PostContent content={content} />
       </div>
-      {truncated && (
-        <button
-          onClick={() => setExpanded((v) => !v)}
-          className="text-sm text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors mt-1 font-[family-name:var(--font-inter)]"
-        >
-          {expanded ? "Show less" : "Read more"}
-        </button>
-      )}
+      <div className="flex items-center justify-between mt-2">
+        <span className="text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">
+          {timestamp}
+        </span>
+        {truncated && !hasImage && (
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="text-sm text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)]"
+          >
+            {expanded ? "Show less" : "Read more"}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

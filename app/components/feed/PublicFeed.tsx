@@ -64,10 +64,10 @@ export default function PublicFeed() {
                 {pending === event.pubkey ? "Following…" : "Follow"}
               </button>
             </div>
-            <PostBody content={event.content} />
-            <span className="text-sm text-[#2d2d2d]/50 mt-2 block font-[family-name:var(--font-inter)]">
-              {new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · {timeAgo(event.created_at)}
-            </span>
+            <PostBody
+              content={event.content}
+              timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
+            />
             <div className="flex items-center justify-between mt-2">
               <PostReplies eventId={event.id} count={reactions.get(event.id) ?? 0} replyCounts={reactions} />
               <ReplyButton eventId={event.id} eventPubkey={event.pubkey} />
