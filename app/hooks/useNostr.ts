@@ -8,6 +8,7 @@ import type { Event, Filter } from "nostr-tools";
 export function useNostrFeed(filter: Filter) {
   const { pool } = useNostrContext();
   const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const filterKey = JSON.stringify(filter);
 
@@ -16,9 +17,11 @@ export function useNostrFeed(filter: Filter) {
 
     if (parsed.authors !== undefined && parsed.authors.length === 0) {
       setEvents([]);
+      setLoading(false);
       return;
     }
 
+    setLoading(true);
     console.log("[useNostrFeed] subscribing with filter", parsed);
 
     const sub = pool.subscribeMany(RELAYS, [parsed], {
@@ -27,6 +30,9 @@ export function useNostrFeed(filter: Filter) {
           if (prev.find((e) => e.id === event.id)) return prev;
           return [event, ...prev].sort((a, b) => b.created_at - a.created_at);
         });
+      },
+      oneose() {
+        setLoading(false);
       },
     });
 
@@ -60,5 +66,5 @@ export function useNostrFeed(filter: Filter) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pool, filterKey]);
 
-  return { events, loadMore, loadingMore };
+  return { events, loading, loadMore, loadingMore };
 }

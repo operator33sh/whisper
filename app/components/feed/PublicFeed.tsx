@@ -14,7 +14,7 @@ import type { Event } from "nostr-tools";
 
 export default function PublicFeed() {
   const { pool } = useNostrContext();
-  const { events, loadMore, loadingMore } = useNostrFeed({ kinds: [1], limit: 1000 });
+  const { events, loading, loadMore, loadingMore } = useNostrFeed({ kinds: [1], limit: 1000 });
   const reactions = useReplyCounts();
   const follows = useFollows((s) => s.follows);
   const follow = useFollows((s) => s.follow);
@@ -46,6 +46,11 @@ export default function PublicFeed() {
   return (
     <section className="h-full flex flex-col overflow-hidden">
       <h2 className="text-2xl font-semibold mb-6">Feed</h2>
+      {loading && (
+        <div className="flex justify-center pt-8">
+          <div className="w-6 h-6 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
+        </div>
+      )}
       <ul className="space-y-8 overflow-y-auto flex-1 pr-2">
         {filtered.map((event: Event) => (
           <li key={event.id} className="leading-relaxed">

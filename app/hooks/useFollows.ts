@@ -10,6 +10,7 @@ const STORAGE_KEY = "whisper:nsec";
 
 interface FollowStore {
   follows: string[];
+  loadingFollows: boolean;
   setFollows: (pubkeys: string[]) => void;
   loadFollows: (pool: SimplePool, pubkey: string) => void;
   follow: (pool: SimplePool, pubkey: string) => Promise<void>;
@@ -18,11 +19,13 @@ interface FollowStore {
 
 export const useFollows = create<FollowStore>((set, get) => ({
   follows: [],
+  loadingFollows: true,
 
   setFollows: (pubkeys) => set({ follows: pubkeys }),
 
   loadFollows: (pool: SimplePool, pubkey: string) => {
     console.log("[loadFollows] fetching kind:3 for", pubkey);
+    set({ loadingFollows: true });
 
     const sub = pool.subscribeMany(RELAYS, [{ kinds: [3], authors: [pubkey], limit: 1 }], {
       onevent(event: Event) {
@@ -30,8 +33,11 @@ export const useFollows = create<FollowStore>((set, get) => ({
           .filter((t) => t[0] === "p")
           .map((t) => t[1]);
         console.log("[loadFollows] loaded", pubkeys.length, "follows");
-        set({ follows: pubkeys });
+        set({ follows: pubkeys, loadingFollows: false });
         sub.close();
+      },
+      oneose() {
+        set({ loadingFollows: false });
       },
     });
   },
