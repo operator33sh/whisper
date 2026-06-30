@@ -1,6 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import NprofileLink from "@/app/components/ui/NprofileLink";
+
+function ImageModal({ src, onClose }: { src: string; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <img
+        src={src}
+        alt=""
+        className="max-w-full max-h-full rounded object-contain"
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
+  );
+}
 
 const MEDIA_REGEX = /(https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|avif|mp4|webm|mov|ogg)(?:\?\S*)?)/gi;
 const VIDEO_REGEX = /\.(?:mp4|webm|mov|ogg)(?:\?|$)/i;
@@ -39,6 +56,7 @@ function renderTextWithLinks(text: string, keyPrefix: string) {
 }
 
 export default function PostContent({ content }: { content: string }) {
+  const [lightbox, setLightbox] = useState<string | null>(null);
   const parts = content.split(MEDIA_REGEX);
 
   return (
@@ -62,13 +80,15 @@ export default function PostContent({ content }: { content: string }) {
               key={i}
               src={part}
               alt=""
-              className="rounded max-w-full"
+              className="rounded max-w-full cursor-pointer"
               loading="lazy"
+              onClick={() => setLightbox(part)}
             />
           );
         }
         return part ? <span key={i}>{renderTextWithLinks(part, String(i))}</span> : null;
       })}
+      {lightbox && <ImageModal src={lightbox} onClose={() => setLightbox(null)} />}
     </div>
   );
 }
