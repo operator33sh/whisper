@@ -15,11 +15,14 @@ interface FollowStore {
   loadFollows: (pool: SimplePool, pubkey: string) => void;
   follow: (pool: SimplePool, pubkey: string) => Promise<void>;
   unfollow: (pool: SimplePool, pubkey: string) => Promise<void>;
+  reset: () => void;
 }
 
 export const useFollows = create<FollowStore>((set, get) => ({
   follows: [],
   loadingFollows: true,
+
+  reset: () => set({ follows: [], loadingFollows: true }),
 
   setFollows: (pubkeys) => set({ follows: pubkeys }),
 
