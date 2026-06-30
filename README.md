@@ -1,6 +1,6 @@
 # Whisper
 
-![Whisper demo image](./docs/example.png)
+![Whisper demo image](https://image.nostr.build/02880c4e8ee41d6f68d67462eb81bb05c084916449a5f4b817a5fb7ae1e62bb5.png)
 
 Whisper is a [Nostr](https://nostr.com) client built around a single principle: your attention belongs to you.
 
