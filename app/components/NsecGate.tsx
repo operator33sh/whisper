@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 
 const STORAGE_KEY = "whisper:nsec";
 
@@ -19,6 +19,11 @@ export function useNsec() {
 function LoginModal({ onLogin }: { onLogin: () => void }) {
   const [input, setInput] = useState("");
   const [error, setError] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   function save() {
     const value = input.trim();
@@ -43,7 +48,7 @@ function LoginModal({ onLogin }: { onLogin: () => void }) {
         </div>
         <div className="flex flex-col gap-1">
           <input
-            autoFocus
+            ref={inputRef}
             type="password"
             value={input}
             onChange={(e) => { setInput(e.target.value); setError(false); }}
