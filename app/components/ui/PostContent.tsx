@@ -12,7 +12,7 @@ function ImageModal({ src, onClose }: { src: string; onClose: () => void }) {
       <img
         src={src}
         alt=""
-        className="max-w-full max-h-full rounded object-contain"
+        className="max-w-3xl max-h-[80vh] w-full rounded object-contain"
         onClick={(e) => e.stopPropagation()}
       />
     </div>
