@@ -7,7 +7,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const { logout } = useNsec();
 
   return (
-    <div className="h-screen flex flex-col px-6 max-w-5xl mx-auto">
+    <div className="h-screen flex flex-col px-6 w-[928px] mx-auto">
       <header className="flex items-center justify-between py-8 shrink-0">
         <div className="flex items-end gap-4">
           <h1 className="text-4xl font-bold tracking-tight">Whisper</h1>
