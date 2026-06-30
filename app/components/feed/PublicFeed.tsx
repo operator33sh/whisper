@@ -34,7 +34,8 @@ export default function PublicFeed() {
   const filtered = events.filter(
     (e: Event) =>
       !follows.includes(e.pubkey) &&
-      (reactions.get(e.id) ?? 0) > 0
+      (reactions.get(e.id) ?? 0) > 0 &&
+      !e.tags.some(t => t[0] === 'e')
   );
 
   if (events.length > 0 && reactions.size > 0 && filtered.length === 0) {
