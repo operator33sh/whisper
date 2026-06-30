@@ -74,15 +74,17 @@ export default function PublicFeed() {
             </div>
           </li>
         ))}
-        <li className="pt-4 pb-2">
-          <button
-            onClick={loadMore}
-            disabled={loadingMore}
-            className="w-full text-sm text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loadingMore ? "Loading…" : "Load more"}
-          </button>
-        </li>
+        {!loading && (
+          <li className="pt-4 pb-2">
+            <button
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="w-full text-sm text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loadingMore ? "Loading…" : "Load more"}
+            </button>
+          </li>
+        )}
       </ul>
     </section>
   );

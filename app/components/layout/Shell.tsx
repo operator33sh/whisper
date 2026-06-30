@@ -1,10 +1,21 @@
 "use client";
 
+import { useEffect } from "react";
 import { useNsec } from "@/app/components/NsecGate";
 import NewPostButton from "@/app/components/ui/NewPostButton";
+import { useFollows, getNsecPubkey } from "@/app/hooks/useFollows";
+import { useNostrContext } from "@/app/components/NostrProvider";
 
 export default function Shell({ children }: { children: React.ReactNode }) {
   const { logout } = useNsec();
+  const { pool } = useNostrContext();
+  const loadFollows = useFollows((s) => s.loadFollows);
+
+  useEffect(() => {
+    const pubkey = getNsecPubkey();
+    if (!pubkey) return;
+    loadFollows(pool, pubkey);
+  }, [pool, loadFollows]);
 
   return (
     <div className="h-screen flex flex-col px-6 w-[928px] mx-auto">

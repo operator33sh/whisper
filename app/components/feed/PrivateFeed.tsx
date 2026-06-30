@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNostrFeed } from "@/app/hooks/useNostr";
-import { useFollows, getNsecPubkey } from "@/app/hooks/useFollows";
+import { useFollows } from "@/app/hooks/useFollows";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useReplyCounts } from "@/app/hooks/useReplyCounts";
 import { timeAgo } from "@/app/lib/timeAgo";
@@ -16,7 +16,6 @@ export default function PrivateFeed() {
   const { pool } = useNostrContext();
   const follows = useFollows((s) => s.follows);
   const loadingFollows = useFollows((s) => s.loadingFollows);
-  const loadFollows = useFollows((s) => s.loadFollows);
   const unfollow = useFollows((s) => s.unfollow);
   const { events, loading, loadMore, loadingMore } = useNostrFeed({ kinds: [1], authors: follows, limit: 50 });
   const replyCounts = useReplyCounts();
@@ -33,25 +32,15 @@ export default function PrivateFeed() {
     }
   }
 
-  useEffect(() => {
-    const pubkey = getNsecPubkey();
-    if (!pubkey) {
-      console.warn("[PrivateFeed] no valid nsec in localStorage, cannot load follows");
-      return;
-    }
-    loadFollows(pool, pubkey);
-  }, [pool, loadFollows]);
-
   return (
     <section className="h-full flex flex-col overflow-hidden">
       <h2 className="text-2xl font-semibold mb-6">Following</h2>
-        <>
-          {loading && (
-            <div className="flex justify-center pt-8">
-              <div className="w-6 h-6 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
-            </div>
-          )}
-          <ul className="space-y-8 overflow-y-auto flex-1 pr-2">
+      {(loadingFollows || loading) ? (
+        <div className="flex justify-center pt-8">
+          <div className="w-6 h-6 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
+        </div>
+      ) : (
+        <ul className="space-y-8 overflow-y-auto flex-1 pr-2">
           {events.filter((e: Event) => follows.includes(e.pubkey) && !e.tags.some(t => t[0] === 'e')).map((event: Event) => (
             <li key={event.id} className="leading-relaxed">
               <div className="flex items-center justify-between gap-4 mb-2">
@@ -84,7 +73,7 @@ export default function PrivateFeed() {
             </button>
           </li>
         </ul>
-        </>
+      )}
     </section>
   );
 }
