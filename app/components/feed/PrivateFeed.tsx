@@ -39,7 +39,7 @@ export default function PrivateFeed() {
 
     newAuthors.forEach((pk) => subscribedAuthors.current.add(pk));
 
-    const sub = pool.subscribeMany(RELAYS, [{ kinds: [1], authors: newAuthors, limit: 50 }], {
+    const sub = pool.subscribeMany(RELAYS, [{ kinds: [1], authors: newAuthors, limit: 100 }], {
       onevent(event: Event) {
         setEvents((prev) => {
           if (prev.find((e) => e.id === event.id)) return prev;
@@ -64,7 +64,7 @@ export default function PrivateFeed() {
 
       const sub = pool.subscribeMany(
         RELAYS,
-        [{ kinds: [1], authors, until: oldest.created_at - 1, limit: 50 }],
+        [{ kinds: [1], authors, until: oldest.created_at - 1, limit: 100 }],
         {
           onevent(event: Event) {
             setEvents((prev) => {
