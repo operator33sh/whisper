@@ -24,6 +24,19 @@ export default function PrivateFeed() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const subscribedAuthors = useRef<Set<string>>(new Set());
+  const feedRef = useRef<HTMLUListElement>(null);
+
+  useEffect(() => {
+    function handleWheel(e: WheelEvent) {
+      if (!feedRef.current) return;
+      if (feedRef.current.contains(e.target as Node)) return;
+      if (e.clientX < window.innerWidth / 2) return;
+      feedRef.current.scrollBy({ top: e.deltaY });
+      e.preventDefault();
+    }
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    return () => window.removeEventListener("wheel", handleWheel);
+  }, []);
 
   useEffect(() => {
     if (loadingFollows) return;
@@ -102,7 +115,7 @@ export default function PrivateFeed() {
           <div className="w-6 h-6 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
         </div>
       ) : (
-        <ul className="space-y-8 overflow-y-auto flex-1 pr-2">
+        <ul ref={feedRef} className="space-y-8 overflow-y-auto flex-1 pr-2">
           {events.filter((e: Event) => follows.includes(e.pubkey) && !e.tags.some(t => t[0] === 'e')).map((event: Event) => (
             <li key={event.id} className="leading-relaxed">
               <div className="flex items-center justify-between gap-4 mb-2">

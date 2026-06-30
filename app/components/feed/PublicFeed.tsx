@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNostrFeed } from "@/app/hooks/useNostr";
 import { useFollows } from "@/app/hooks/useFollows";
 import { useNostrContext } from "@/app/components/NostrProvider";
@@ -19,6 +19,19 @@ export default function PublicFeed() {
   const follows = useFollows((s) => s.follows);
   const follow = useFollows((s) => s.follow);
   const [pending, setPending] = useState<string | null>(null);
+  const feedRef = useRef<HTMLUListElement>(null);
+
+  useEffect(() => {
+    function handleWheel(e: WheelEvent) {
+      if (!feedRef.current) return;
+      if (feedRef.current.contains(e.target as Node)) return;
+      if (e.clientX >= window.innerWidth / 2) return;
+      feedRef.current.scrollBy({ top: e.deltaY });
+      e.preventDefault();
+    }
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    return () => window.removeEventListener("wheel", handleWheel);
+  }, []);
 
   async function handleFollow(pubkey: string) {
     setPending(pubkey);
@@ -52,7 +65,7 @@ export default function PublicFeed() {
           <div className="w-6 h-6 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
         </div>
       )}
-      <ul className="space-y-8 overflow-y-auto flex-1 pr-2">
+      <ul ref={feedRef} className="space-y-8 overflow-y-auto flex-1 pr-2">
         {filtered.map((event: Event) => (
           <li key={event.id} className="leading-relaxed">
             <div className="flex items-center justify-between gap-4 mb-2">
