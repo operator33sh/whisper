@@ -99,10 +99,10 @@ export default function PostReplies({ eventId, count, replyCounts }: Props) {
                     <UserMeta pubkey={reply.pubkey} size={24} />
                     <FollowToggle pubkey={reply.pubkey} />
                   </div>
-                  <PostBody content={reply.content} />
-                  <span className="text-xs text-[#2d2d2d]/40 mt-1 block font-[family-name:var(--font-inter)]">
-                    {new Date(reply.created_at * 1000).toLocaleDateString("en-GB")} · {timeAgo(reply.created_at)}
-                  </span>
+                  <PostBody
+                    content={reply.content}
+                    timestamp={`${new Date(reply.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(reply.created_at)}`}
+                  />
                   <PostReplies
                     eventId={reply.id}
                     count={replyCount}
