@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { RELAYS } from "@/app/lib/nostr";
 import { finalizeEvent } from "nostr-tools";
@@ -13,6 +13,11 @@ export default function NewPostButton() {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (open) textareaRef.current?.focus();
+  }, [open]);
   const [error, setError] = useState<string | null>(null);
 
   async function submit() {
@@ -65,11 +70,11 @@ export default function NewPostButton() {
           <div className="bg-[#f9f9f7] rounded-lg p-8 w-full max-w-md flex flex-col gap-4">
             <h2 className="text-xl font-semibold">New Whisper</h2>
             <textarea
+              ref={textareaRef}
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="What's on your mind…"
               rows={4}
-              autoFocus
               className="w-full border border-[#2d2d2d]/30 rounded px-4 py-2 text-sm font-[family-name:var(--font-inter)] bg-white focus:outline-none focus:border-[#2d2d2d] resize-none"
             />
             {error && (
