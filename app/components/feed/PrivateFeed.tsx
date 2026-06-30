@@ -50,7 +50,7 @@ export default function PrivateFeed() {
         </p>
       ) : (
         <ul className="space-y-8 overflow-y-auto flex-1 pr-2">
-          {events.filter((e: Event) => follows.includes(e.pubkey)).map((event: Event) => (
+          {events.filter((e: Event) => follows.includes(e.pubkey) && !e.tags.some(t => t[0] === 'e')).map((event: Event) => (
             <li key={event.id} className="leading-relaxed">
               <div className="flex items-center justify-between gap-4 mb-2">
                 <UserMeta pubkey={event.pubkey} />
