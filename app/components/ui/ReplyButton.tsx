@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { RELAYS } from "@/app/lib/nostr";
 import { finalizeEvent } from "nostr-tools";
@@ -19,6 +19,7 @@ export default function ReplyButton({ eventId, eventPubkey }: Props) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   async function submit() {
     const nsec = localStorage.getItem(STORAGE_KEY);
@@ -69,6 +70,8 @@ export default function ReplyButton({ eventId, eventPubkey }: Props) {
           <div className="bg-[#f9f9f7] rounded-lg p-8 w-full max-w-md flex flex-col gap-4">
             <h2 className="text-xl font-semibold">Reply</h2>
             <textarea
+              ref={textareaRef}
+              autoFocus
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Write your reply…"
