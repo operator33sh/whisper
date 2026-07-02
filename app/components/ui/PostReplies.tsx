@@ -56,6 +56,16 @@ function FollowToggle({ pubkey }: { pubkey: string }) {
   );
 }
 
+function isDirectReply(event: Event, parentId: string): boolean {
+  const eTags = event.tags.filter(t => t[0] === "e");
+  const replyTag = eTags.find(t => t[3] === "reply");
+  if (replyTag) return replyTag[1] === parentId;
+  const rootTag = eTags.find(t => t[3] === "root");
+  if (rootTag) return rootTag[1] === parentId;
+  // legacy: last e tag is the direct parent
+  return eTags.at(-1)?.[1] === parentId;
+}
+
 export default function PostReplies({ eventId, count, replyCounts, rootEventId }: Props) {
   const root = rootEventId ?? eventId;
   const { pool } = useNostrContext();
@@ -68,6 +78,7 @@ export default function PostReplies({ eventId, count, replyCounts, rootEventId }
     const filter: Filter = { kinds: [1], "#e": [eventId], limit: 50 };
     const sub = pool.subscribeMany(RELAYS, [filter], {
       onevent(event: Event) {
+        if (!isDirectReply(event, eventId)) return;
         setReplies((prev) => {
           if (prev.find((e) => e.id === event.id)) return prev;
           return [event, ...prev].sort((a, b) => b.created_at - a.created_at);
