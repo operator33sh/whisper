@@ -11,9 +11,10 @@ const STORAGE_KEY = "whisper:nsec";
 interface Props {
   eventId: string;
   eventPubkey: string;
+  rootEventId?: string;
 }
 
-export default function ReplyButton({ eventId, eventPubkey }: Props) {
+export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props) {
   const { pool } = useNostrContext();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
@@ -39,7 +40,9 @@ export default function ReplyButton({ eventId, eventPubkey }: Props) {
         {
           kind: 1,
           created_at: Math.floor(Date.now() / 1000),
-          tags: [["e", eventId], ["p", eventPubkey]],
+          tags: rootEventId && rootEventId !== eventId
+            ? [["e", rootEventId, "", "root"], ["e", eventId, "", "reply"], ["p", eventPubkey]]
+            : [["e", eventId, "", "root"], ["p", eventPubkey]],
           content,
         },
         privateKey as Uint8Array

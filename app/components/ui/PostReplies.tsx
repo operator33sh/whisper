@@ -7,12 +7,14 @@ import { RELAYS } from "@/app/lib/nostr";
 import { timeAgo } from "@/app/lib/timeAgo";
 import PostBody from "@/app/components/ui/PostBody";
 import UserMeta from "@/app/components/ui/UserMeta";
+import ReplyButton from "@/app/components/ui/ReplyButton";
 import type { Event, Filter } from "nostr-tools";
 
 interface Props {
   eventId: string;
   count: number;
   replyCounts?: Map<string, number>;
+  rootEventId?: string;
 }
 
 function FollowToggle({ pubkey }: { pubkey: string }) {
@@ -54,7 +56,8 @@ function FollowToggle({ pubkey }: { pubkey: string }) {
   );
 }
 
-export default function PostReplies({ eventId, count, replyCounts }: Props) {
+export default function PostReplies({ eventId, count, replyCounts, rootEventId }: Props) {
+  const root = rootEventId ?? eventId;
   const { pool } = useNostrContext();
   const [expanded, setExpanded] = useState(false);
   const [replies, setReplies] = useState<Event[]>([]);
@@ -102,11 +105,13 @@ export default function PostReplies({ eventId, count, replyCounts }: Props) {
                   <PostBody
                     content={reply.content}
                     timestamp={`${new Date(reply.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(reply.created_at)}`}
+                    action={<ReplyButton eventId={reply.id} eventPubkey={reply.pubkey} rootEventId={root} />}
                   />
                   <PostReplies
                     eventId={reply.id}
                     count={replyCount}
                     replyCounts={replyCounts}
+                    rootEventId={root}
                   />
                 </li>
               );

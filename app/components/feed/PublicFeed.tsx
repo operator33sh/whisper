@@ -81,11 +81,9 @@ export default function PublicFeed() {
             <PostBody
               content={event.content}
               timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
+              action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} />}
             />
-            <div className="flex items-center justify-between mt-2">
-              <PostReplies eventId={event.id} count={reactions.get(event.id) ?? 0} replyCounts={reactions} />
-              <ReplyButton eventId={event.id} eventPubkey={event.pubkey} />
-            </div>
+            <PostReplies eventId={event.id} count={reactions.get(event.id) ?? 0} replyCounts={reactions} />
           </li>
         ))}
         {!loading && (
