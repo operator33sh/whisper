@@ -15,8 +15,8 @@ export default function Home() {
     <Shell>
       {/* Feeds: always mounted so subscriptions stay alive */}
       <div className={`grid grid-cols-2 gap-12 h-full ${activeView === "mission-control" ? "hidden" : ""}`}>
-        <PublicFeed />
         <PrivateFeed />
+        <PublicFeed />
       </div>
 
       {/* Mission Control: mounts once unlocked, stays alive after */}
