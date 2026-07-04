@@ -7,34 +7,38 @@ import { useRelays } from "@/app/hooks/useRelays";
 interface NostrContextValue {
   pool: SimplePool;
   connected: boolean;
+  connectedRelays: Set<string>;
 }
 
 const NostrContext = createContext<NostrContextValue | null>(null);
 
 export function NostrProvider({ children }: { children: React.ReactNode }) {
   const [pool] = useState(() => new SimplePool());
-  const [connected, setConnected] = useState(false);
+  const [connectedRelays, setConnectedRelays] = useState<Set<string>>(new Set());
   const relays = useRelays((s) => s.relays);
 
   useEffect(() => {
-    const sockets = relays.map((url) => new WebSocket(url));
-    let openCount = 0;
+    const sockets: { url: string; ws: WebSocket }[] = relays.map((url) => ({
+      url,
+      ws: new WebSocket(url),
+    }));
 
-    sockets.forEach((ws) => {
-      ws.onopen = () => { openCount++; setConnected(openCount > 0); };
-      ws.onclose = () => { openCount = Math.max(0, openCount - 1); setConnected(openCount > 0); };
-      ws.onerror = () => { openCount = Math.max(0, openCount - 1); setConnected(openCount > 0); };
+    sockets.forEach(({ url, ws }) => {
+      ws.onopen = () => setConnectedRelays((prev) => new Set([...prev, url]));
+      ws.onclose = () => setConnectedRelays((prev) => { const next = new Set(prev); next.delete(url); return next; });
+      ws.onerror = () => setConnectedRelays((prev) => { const next = new Set(prev); next.delete(url); return next; });
     });
 
     return () => {
-      sockets.forEach((ws) => ws.close());
+      sockets.forEach(({ ws }) => ws.close());
       pool.close(relays);
+      setConnectedRelays(new Set());
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pool, relays.join(",")]);
 
   return (
-    <NostrContext.Provider value={{ pool, connected }}>
+    <NostrContext.Provider value={{ pool, connected: connectedRelays.size > 0, connectedRelays }}>
       {children}
     </NostrContext.Provider>
   );
