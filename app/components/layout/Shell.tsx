@@ -35,11 +35,12 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         <button
           onClick={() => setView("feed")}
           title="Whisper"
-          className={`text-lg font-[family-name:var(--font-inter)] transition-opacity select-none ${
+          style={{ fontFamily: "var(--font-crimson)" }}
+          className={`text-lg transition-opacity select-none ${
             activeView === "feed" ? "opacity-100" : "opacity-25 hover:opacity-60"
           }`}
         >
-          w
+          W
         </button>
         <button
           onClick={() => setView("mission-control")}
