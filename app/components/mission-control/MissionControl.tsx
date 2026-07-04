@@ -1,20 +1,31 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import ResonanceFeed from "./ResonanceFeed";
 import ReflectionLog from "./ReflectionLog";
 import { useMissionControl } from "@/app/hooks/useMissionControl";
+import { getNsecPubkey } from "@/app/hooks/useFollows";
+import { useNsec } from "@/app/components/NsecGate";
 
-interface Props {
-  pubkey: string;
-}
+const Spinner = () => (
+  <div className="flex justify-center pt-8">
+    <div className="w-5 h-5 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
+  </div>
+);
 
-export default function MissionControl({ pubkey }: Props) {
+export default function MissionControl() {
+  const { unlocked } = useNsec();
+  const [pubkey, setPubkey] = useState<string | null>(null);
   const leftRef = useRef<HTMLElement>(null);
   const rightRef = useRef<HTMLElement>(null);
   const activeView = useMissionControl((s) => s.activeView);
   const activeViewRef = useRef(activeView);
   activeViewRef.current = activeView;
+
+  useEffect(() => {
+    if (!unlocked) return;
+    setPubkey(getNsecPubkey());
+  }, [unlocked]);
 
   useEffect(() => {
     function handleWheel(e: WheelEvent) {
@@ -40,7 +51,7 @@ export default function MissionControl({ pubkey }: Props) {
             Messages directed at you
           </p>
         </header>
-        <ResonanceFeed pubkey={pubkey} />
+        {pubkey ? <ResonanceFeed pubkey={pubkey} /> : <Spinner />}
       </section>
 
       <section ref={rightRef} className="flex flex-col gap-8 overflow-y-auto pr-4">
@@ -52,7 +63,7 @@ export default function MissionControl({ pubkey }: Props) {
             Your own voice
           </p>
         </header>
-        <ReflectionLog pubkey={pubkey} />
+        {pubkey ? <ReflectionLog pubkey={pubkey} /> : <Spinner />}
       </section>
     </div>
   );

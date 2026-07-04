@@ -44,7 +44,7 @@ export default function ResonanceFeed({ pubkey }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeView]);
 
-  if (loading) {
+  if (loading && events.length === 0) {
     return (
       <div className="flex justify-center pt-8">
         <div className="w-5 h-5 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />

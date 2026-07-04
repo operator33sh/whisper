@@ -1,23 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Shell from "@/app/components/layout/Shell";
 import PublicFeed from "@/app/components/feed/PublicFeed";
 import PrivateFeed from "@/app/components/feed/PrivateFeed";
 import MissionControl from "@/app/components/mission-control/MissionControl";
 import { useMissionControl } from "@/app/hooks/useMissionControl";
-import { getNsecPubkey } from "@/app/hooks/useFollows";
 import { useNsec } from "@/app/components/NsecGate";
 
 export default function Home() {
   const activeView = useMissionControl((s) => s.activeView);
   const { unlocked } = useNsec();
-  const [pubkey, setPubkey] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!unlocked) return;
-    setPubkey(getNsecPubkey());
-  }, [unlocked]);
 
   return (
     <Shell>
@@ -27,10 +19,10 @@ export default function Home() {
         <PrivateFeed />
       </div>
 
-      {/* Mission Control: mounts on first visit, stays alive after */}
-      {pubkey && (
+      {/* Mission Control: mounts once unlocked, stays alive after */}
+      {unlocked && (
         <div className={`h-full ${activeView === "feed" ? "hidden" : ""}`}>
-          <MissionControl pubkey={pubkey} />
+          <MissionControl />
         </div>
       )}
     </Shell>
