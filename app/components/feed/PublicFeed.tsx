@@ -15,7 +15,7 @@ import type { Event } from "nostr-tools";
 export default function PublicFeed() {
   const { pool } = useNostrContext();
   const { events, loading, loadMore, loadingMore, hasMore } = useNostrFeed({ kinds: [1], limit: 1000 });
-  const reactions = useReplyCounts();
+  const reactions = useReplyCounts(events.map((e: Event) => e.id));
   const follows = useFollows((s) => s.follows);
   const follow = useFollows((s) => s.follow);
   const [pending, setPending] = useState<string | null>(null);

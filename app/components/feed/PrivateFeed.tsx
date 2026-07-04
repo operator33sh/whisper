@@ -18,10 +18,10 @@ export default function PrivateFeed() {
   const loadingFollows = useFollows((s) => s.loadingFollows);
   const unfollow = useFollows((s) => s.unfollow);
   const relays = useRelays((s) => s.relays);
-  const replyCounts = useReplyCounts();
   const [pending, setPending] = useState<string | null>(null);
 
   const [events, setEvents] = useState<Event[]>([]);
+  const replyCounts = useReplyCounts(events.map((e) => e.id));
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);

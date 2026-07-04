@@ -5,27 +5,20 @@ import { useNostrContext } from "@/app/components/NostrProvider";
 import { useRelays } from "@/app/hooks/useRelays";
 import type { Event } from "nostr-tools";
 
-export function useReplyCounts(): Map<string, number> {
+export function useReplyCounts(eventIds: string[]): Map<string, number> {
   const { pool } = useNostrContext();
   const relays = useRelays((s) => s.relays);
   const [counts, setCounts] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
-    console.log("[useReplyCounts] subscribing to kind:1 replies");
+    if (eventIds.length === 0) return;
 
-    let received = 0;
-
-    const sub = pool.subscribeMany(relays, [{ kinds: [1], limit: 1000 }], {
+    const sub = pool.subscribeMany(relays, [{ kinds: [1], "#e": eventIds }], {
       onevent(event: Event) {
         const eTags = event.tags.filter((t) => t[0] === "e");
         if (eTags.length === 0) return;
 
         const targetId = eTags.at(-1)![1];
-
-        received++;
-        if (received <= 3) {
-          console.log("[useReplyCounts] sample reply", { id: event.id, eTags, targetId });
-        }
 
         setCounts((prev) => {
           const next = new Map(prev);
@@ -35,12 +28,9 @@ export function useReplyCounts(): Map<string, number> {
       },
     });
 
-    return () => {
-      console.log("[useReplyCounts] closing subscription");
-      sub.close();
-    };
+    return () => sub.close();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pool, relays.join(",")]);
+  }, [pool, relays.join(","), eventIds.join(",")]);
 
   return counts;
 }
