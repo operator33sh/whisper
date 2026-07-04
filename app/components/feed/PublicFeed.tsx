@@ -26,7 +26,7 @@ export default function PublicFeed() {
     function handleWheel(e: WheelEvent) {
       if (!feedRef.current) return;
       if (feedRef.current.contains(e.target as Node)) return;
-      if (e.clientX >= window.innerWidth / 2) return;
+      if (e.clientX < window.innerWidth / 2) return;
       feedRef.current.scrollBy({ top: e.deltaY });
       e.preventDefault();
     }
