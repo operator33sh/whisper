@@ -15,14 +15,19 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const loadFollows = useFollows((s) => s.loadFollows);
   const { activeView, setView, hasPendingMentions } = useMissionControl();
   const initRelays = useRelays((s) => s.initRelays);
+  const relays = useRelays((s) => s.relays);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     initRelays();
+  }, [initRelays]);
+
+  useEffect(() => {
     const pubkey = getNsecPubkey();
     if (!pubkey) return;
     loadFollows(pool, pubkey);
-  }, [pool, loadFollows, initRelays]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pool, loadFollows, relays.join(",")]);
 
   return (
     <div className="h-screen flex">

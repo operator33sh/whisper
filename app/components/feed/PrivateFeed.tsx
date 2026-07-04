@@ -18,6 +18,7 @@ export default function PrivateFeed() {
   const loadingFollows = useFollows((s) => s.loadingFollows);
   const unfollow = useFollows((s) => s.unfollow);
   const relays = useRelays((s) => s.relays);
+  const relaysKey = relays.join(",");
   const replyCounts = useReplyCounts();
   const [pending, setPending] = useState<string | null>(null);
 
@@ -26,6 +27,13 @@ export default function PrivateFeed() {
   const [loadingMore, setLoadingMore] = useState(false);
   const subscribedAuthors = useRef<Set<string>>(new Set());
   const feedRef = useRef<HTMLUListElement>(null);
+
+  // Reset subscriptions when relay list changes so all authors are re-fetched
+  useEffect(() => {
+    subscribedAuthors.current = new Set();
+    setEvents([]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [relaysKey]);
 
   useEffect(() => {
     function handleWheel(e: WheelEvent) {
@@ -66,7 +74,8 @@ export default function PrivateFeed() {
     });
 
     return () => sub.close();
-  }, [follows, loadingFollows, pool]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [follows, loadingFollows, pool, relaysKey]);
 
   const loadMore = useCallback(() => {
     setEvents((current) => {
