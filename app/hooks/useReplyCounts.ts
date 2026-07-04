@@ -22,7 +22,13 @@ export function useReplyCounts(eventIds: string[]): Map<string, number> {
   useEffect(() => {
     if (debouncedIds.length === 0) return;
 
-    const sub = pool.subscribeMany(relays, [{ kinds: [1], "#e": debouncedIds }], {
+    const CHUNK = 50;
+    const chunks: string[][] = [];
+    for (let i = 0; i < debouncedIds.length; i += CHUNK) {
+      chunks.push(debouncedIds.slice(i, i + CHUNK));
+    }
+
+    const handler = {
       onevent(event: Event) {
         if (seenReplies.current.has(event.id)) return;
         seenReplies.current.add(event.id);
@@ -37,9 +43,13 @@ export function useReplyCounts(eventIds: string[]): Map<string, number> {
           return next;
         });
       },
-    });
+    };
 
-    return () => sub.close();
+    const subs = chunks.map((chunk) =>
+      pool.subscribeMany(relays, [{ kinds: [1], "#e": chunk }], handler)
+    );
+
+    return () => subs.forEach((sub) => sub.close());
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pool, relays.join(","), debouncedIds.join(",")]);
 
