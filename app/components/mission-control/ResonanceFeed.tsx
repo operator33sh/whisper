@@ -3,10 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useNostrFeed } from "@/app/hooks/useNostr";
 import { useMissionControl } from "@/app/hooks/useMissionControl";
-import UserMeta from "@/app/components/ui/UserMeta";
-import PostBody from "@/app/components/ui/PostBody";
-import ReplyButton from "@/app/components/ui/ReplyButton";
-import { timeAgo } from "@/app/lib/timeAgo";
+import ResonanceItem from "./ResonanceItem";
 import type { Filter } from "nostr-tools";
 
 interface Props {
@@ -66,19 +63,7 @@ export default function ResonanceFeed({ pubkey }: Props) {
   return (
     <ul className="flex flex-col gap-10">
       {events.map((event) => (
-        <li key={event.id} className="flex flex-col gap-2 leading-relaxed">
-          <UserMeta pubkey={event.pubkey} />
-          <PostBody
-            content={event.content}
-            timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
-            action={
-              <ReplyButton
-                eventId={event.id}
-                eventPubkey={event.pubkey}
-              />
-            }
-          />
-        </li>
+        <ResonanceItem key={event.id} event={event} />
       ))}
     </ul>
   );
