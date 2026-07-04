@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useRelays } from "@/app/hooks/useRelays";
+import { useOptimisticReplyCounts } from "@/app/hooks/useOptimisticReplyCounts";
 import { finalizeEvent } from "nostr-tools";
 import { decode } from "nostr-tools/nip19";
 
@@ -17,6 +18,7 @@ interface Props {
 export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props) {
   const { pool } = useNostrContext();
   const relays = useRelays((s) => s.relays);
+  const increment = useOptimisticReplyCounts((s) => s.increment);
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -50,6 +52,7 @@ export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props
       );
 
       await Promise.any(pool.publish(relays, event));
+      increment(eventId);
       setText("");
       setOpen(false);
     } catch (e) {

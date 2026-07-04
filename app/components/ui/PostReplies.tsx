@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useFollows } from "@/app/hooks/useFollows";
 import { useRelays } from "@/app/hooks/useRelays";
+import { useOptimisticReplyCounts } from "@/app/hooks/useOptimisticReplyCounts";
 import { timeAgo } from "@/app/lib/timeAgo";
 import PostBody from "@/app/components/ui/PostBody";
 import UserMeta from "@/app/components/ui/UserMeta";
@@ -70,6 +71,8 @@ export default function PostReplies({ eventId, count, replyCounts, rootEventId }
   const root = rootEventId ?? eventId;
   const { pool } = useNostrContext();
   const relays = useRelays((s) => s.relays);
+  const optimistic = useOptimisticReplyCounts((s) => s.increments.get(eventId) ?? 0);
+  const displayCount = count + optimistic;
   const [expanded, setExpanded] = useState(false);
   const [replies, setReplies] = useState<Event[]>([]);
 
@@ -93,12 +96,12 @@ export default function PostReplies({ eventId, count, replyCounts, rootEventId }
   return (
     <div className="mt-2">
       <button
-        onClick={() => count > 0 && setExpanded((v) => !v)}
-        disabled={count === 0}
+        onClick={() => displayCount > 0 && setExpanded((v) => !v)}
+        disabled={displayCount === 0}
         className="flex items-center gap-1 text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)] disabled:cursor-default enabled:hover:text-[#2d2d2d] enabled:transition-colors"
       >
         <span>{expanded ? "−" : "+"}</span>
-        <span>{count} {count === 1 ? "reply" : "replies"}</span>
+        <span>{displayCount} {displayCount === 1 ? "reply" : "replies"}</span>
       </button>
 
       {expanded && (
