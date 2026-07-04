@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import ResonanceFeed from "./ResonanceFeed";
 import ReflectionLog from "./ReflectionLog";
+import { useMissionControl } from "@/app/hooks/useMissionControl";
 
 interface Props {
   pubkey: string;
@@ -11,9 +12,13 @@ interface Props {
 export default function MissionControl({ pubkey }: Props) {
   const leftRef = useRef<HTMLElement>(null);
   const rightRef = useRef<HTMLElement>(null);
+  const activeView = useMissionControl((s) => s.activeView);
+  const activeViewRef = useRef(activeView);
+  activeViewRef.current = activeView;
 
   useEffect(() => {
     function handleWheel(e: WheelEvent) {
+      if (activeViewRef.current !== "mission-control") return;
       const isLeft = e.clientX < window.innerWidth / 2;
       const target = isLeft ? leftRef.current : rightRef.current;
       if (!target) return;
