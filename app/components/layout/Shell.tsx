@@ -1,23 +1,28 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNsec } from "@/app/components/NsecGate";
 import NewPostButton from "@/app/components/ui/NewPostButton";
 import { useFollows, getNsecPubkey } from "@/app/hooks/useFollows";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useMissionControl } from "@/app/hooks/useMissionControl";
+import { useRelays } from "@/app/hooks/useRelays";
+import RelaySettings from "@/app/components/settings/RelaySettings";
 
 export default function Shell({ children }: { children: React.ReactNode }) {
   const { logout } = useNsec();
   const { pool } = useNostrContext();
   const loadFollows = useFollows((s) => s.loadFollows);
   const { activeView, setView, hasPendingMentions } = useMissionControl();
+  const initRelays = useRelays((s) => s.initRelays);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
+    initRelays();
     const pubkey = getNsecPubkey();
     if (!pubkey) return;
     loadFollows(pool, pubkey);
-  }, [pool, loadFollows]);
+  }, [pool, loadFollows, initRelays]);
 
   return (
     <div className="h-screen flex">
@@ -46,6 +51,14 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         >
           control
         </button>
+
+        <button
+          onClick={() => setSettingsOpen(true)}
+          title="Settings"
+          className="mt-auto mb-8 text-base text-[#2d2d2d]/30 hover:text-[#2d2d2d] transition-colors select-none font-[family-name:var(--font-inter)]"
+        >
+          ⚙
+        </button>
       </aside>
 
       {/* Main content */}
@@ -66,6 +79,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           <main className="flex-1 overflow-hidden">{children}</main>
         </div>
       </div>
+
+      {settingsOpen && <RelaySettings onClose={() => setSettingsOpen(false)} />}
     </div>
   );
 }

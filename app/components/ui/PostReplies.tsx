@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useFollows } from "@/app/hooks/useFollows";
-import { RELAYS } from "@/app/lib/nostr";
+import { useRelays } from "@/app/hooks/useRelays";
 import { timeAgo } from "@/app/lib/timeAgo";
 import PostBody from "@/app/components/ui/PostBody";
 import UserMeta from "@/app/components/ui/UserMeta";
@@ -69,6 +69,7 @@ function isDirectReply(event: Event, parentId: string): boolean {
 export default function PostReplies({ eventId, count, replyCounts, rootEventId }: Props) {
   const root = rootEventId ?? eventId;
   const { pool } = useNostrContext();
+  const relays = useRelays((s) => s.relays);
   const [expanded, setExpanded] = useState(false);
   const [replies, setReplies] = useState<Event[]>([]);
 
@@ -76,7 +77,7 @@ export default function PostReplies({ eventId, count, replyCounts, rootEventId }
     if (!expanded) return;
 
     const filter: Filter = { kinds: [1], "#e": [eventId], limit: 50 };
-    const sub = pool.subscribeMany(RELAYS, [filter], {
+    const sub = pool.subscribeMany(relays, [filter], {
       onevent(event: Event) {
         if (!isDirectReply(event, eventId)) return;
         setReplies((prev) => {

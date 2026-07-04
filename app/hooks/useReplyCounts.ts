@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
-import { RELAYS } from "@/app/lib/nostr";
+import { useRelays } from "@/app/hooks/useRelays";
 import type { Event } from "nostr-tools";
 
 export function useReplyCounts(): Map<string, number> {
   const { pool } = useNostrContext();
+  const relays = useRelays((s) => s.relays);
   const [counts, setCounts] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
@@ -14,7 +15,7 @@ export function useReplyCounts(): Map<string, number> {
 
     let received = 0;
 
-    const sub = pool.subscribeMany(RELAYS, [{ kinds: [1], limit: 1000 }], {
+    const sub = pool.subscribeMany(relays, [{ kinds: [1], limit: 1000 }], {
       onevent(event: Event) {
         const eTags = event.tags.filter((t) => t[0] === "e");
         if (eTags.length === 0) return;
@@ -38,7 +39,8 @@ export function useReplyCounts(): Map<string, number> {
       console.log("[useReplyCounts] closing subscription");
       sub.close();
     };
-  }, [pool]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pool, relays.join(",")]);
 
   return counts;
 }

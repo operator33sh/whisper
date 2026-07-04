@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
-import { RELAYS } from "@/app/lib/nostr";
+import { useRelays } from "@/app/hooks/useRelays";
 import { timeAgo } from "@/app/lib/timeAgo";
 import UserMeta from "@/app/components/ui/UserMeta";
 import PostBody from "@/app/components/ui/PostBody";
@@ -37,6 +37,7 @@ function timestamp(event: Event): string {
 
 export default function ResonanceItem({ event }: Props) {
   const { pool } = useNostrContext();
+  const relays = useRelays((s) => s.relays);
   const [parentEvent, setParentEvent] = useState<Event | null>(null);
 
   const parentId = getParentEventId(event);
@@ -45,7 +46,7 @@ export default function ResonanceItem({ event }: Props) {
   useEffect(() => {
     if (!parentId || parentId === event.id) return;
 
-    const sub = pool.subscribeMany(RELAYS, [{ ids: [parentId], kinds: [1] }], {
+    const sub = pool.subscribeMany(relays, [{ ids: [parentId], kinds: [1] }], {
       onevent(e: Event) {
         setParentEvent(e);
         sub.close();

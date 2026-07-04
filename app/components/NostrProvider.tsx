@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { SimplePool } from "nostr-tools";
-import { RELAYS } from "@/app/lib/nostr";
+import { useRelays } from "@/app/hooks/useRelays";
 
 interface NostrContextValue {
   pool: SimplePool;
@@ -14,9 +14,10 @@ const NostrContext = createContext<NostrContextValue | null>(null);
 export function NostrProvider({ children }: { children: React.ReactNode }) {
   const [pool] = useState(() => new SimplePool());
   const [connected, setConnected] = useState(false);
+  const relays = useRelays((s) => s.relays);
 
   useEffect(() => {
-    const sockets = RELAYS.map((url) => new WebSocket(url));
+    const sockets = relays.map((url) => new WebSocket(url));
     let openCount = 0;
 
     sockets.forEach((ws) => {
@@ -27,9 +28,10 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       sockets.forEach((ws) => ws.close());
-      pool.close(RELAYS);
+      pool.close(relays);
     };
-  }, [pool]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pool, relays.join(",")]);
 
   return (
     <NostrContext.Provider value={{ pool, connected }}>

@@ -5,7 +5,7 @@ import { useFollows } from "@/app/hooks/useFollows";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useReplyCounts } from "@/app/hooks/useReplyCounts";
 import { timeAgo } from "@/app/lib/timeAgo";
-import { RELAYS } from "@/app/lib/nostr";
+import { useRelays } from "@/app/hooks/useRelays";
 import PostReplies from "@/app/components/ui/PostReplies";
 import ReplyButton from "@/app/components/ui/ReplyButton";
 import PostBody from "@/app/components/ui/PostBody";
@@ -17,6 +17,7 @@ export default function PrivateFeed() {
   const follows = useFollows((s) => s.follows);
   const loadingFollows = useFollows((s) => s.loadingFollows);
   const unfollow = useFollows((s) => s.unfollow);
+  const relays = useRelays((s) => s.relays);
   const replyCounts = useReplyCounts();
   const [pending, setPending] = useState<string | null>(null);
 
@@ -52,7 +53,7 @@ export default function PrivateFeed() {
 
     newAuthors.forEach((pk) => subscribedAuthors.current.add(pk));
 
-    const sub = pool.subscribeMany(RELAYS, [{ kinds: [1], authors: newAuthors, limit: 100 }], {
+    const sub = pool.subscribeMany(relays, [{ kinds: [1], authors: newAuthors, limit: 100 }], {
       onevent(event: Event) {
         setEvents((prev) => {
           if (prev.find((e) => e.id === event.id)) return prev;
@@ -76,7 +77,7 @@ export default function PrivateFeed() {
       const authors = [...subscribedAuthors.current];
 
       const sub = pool.subscribeMany(
-        RELAYS,
+        relays,
         [{ kinds: [1], authors, until: oldest.created_at - 1, limit: 100 }],
         {
           onevent(event: Event) {

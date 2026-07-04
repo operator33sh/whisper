@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { RELAYS } from "@/app/lib/nostr";
+import { useRelays } from "@/app/hooks/useRelays";
 import type { SimplePool } from "nostr-tools";
 
 export interface Profile {
@@ -34,7 +34,7 @@ export const useProfiles = create<ProfileStore>((set, get) => ({
 
     console.log("[useProfiles] fetching", missing.length, "profiles");
 
-    pool.subscribeMany(RELAYS, [{ kinds: [0], authors: missing }], {
+    pool.subscribeMany(useRelays.getState().relays, [{ kinds: [0], authors: missing }], {
       onevent(event) {
         try {
           const profile: Profile = JSON.parse(event.content);

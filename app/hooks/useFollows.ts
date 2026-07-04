@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { RELAYS } from "@/app/lib/nostr";
+import { useRelays } from "@/app/hooks/useRelays";
 import { finalizeEvent, getPublicKey } from "nostr-tools";
 import { decode } from "nostr-tools/nip19";
 import type { Event, SimplePool } from "nostr-tools";
@@ -27,7 +27,7 @@ export const useFollows = create<FollowStore>((set, get) => ({
     console.log("[loadFollows] fetching kind:3 for", pubkey);
     set({ loadingFollows: true });
 
-    const sub = pool.subscribeMany(RELAYS, [{ kinds: [3], authors: [pubkey], limit: 1 }], {
+    const sub = pool.subscribeMany(useRelays.getState().relays, [{ kinds: [3], authors: [pubkey], limit: 1 }], {
       onevent(event: Event) {
         const pubkeys = event.tags
           .filter((t) => t[0] === "p")
@@ -73,7 +73,7 @@ export const useFollows = create<FollowStore>((set, get) => ({
     console.log("[follow] publishing kind:3 event", event);
 
     try {
-      await Promise.any(pool.publish(RELAYS, event));
+      await Promise.any(pool.publish(useRelays.getState().relays, event));
       console.log("[follow] relay acknowledged");
     } catch (e) {
       console.error("[follow] relay rejected or timed out:", e);
@@ -111,7 +111,7 @@ export const useFollows = create<FollowStore>((set, get) => ({
     console.log("[unfollow] publishing kind:3 event", event);
 
     try {
-      await Promise.any(pool.publish(RELAYS, event));
+      await Promise.any(pool.publish(useRelays.getState().relays, event));
       console.log("[unfollow] relay acknowledged");
     } catch (e) {
       console.error("[unfollow] relay rejected or timed out:", e);

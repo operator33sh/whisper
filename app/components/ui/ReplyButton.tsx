@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
-import { RELAYS } from "@/app/lib/nostr";
+import { useRelays } from "@/app/hooks/useRelays";
 import { finalizeEvent } from "nostr-tools";
 import { decode } from "nostr-tools/nip19";
 
@@ -16,6 +16,7 @@ interface Props {
 
 export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props) {
   const { pool } = useNostrContext();
+  const relays = useRelays((s) => s.relays);
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -48,7 +49,7 @@ export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props
         privateKey as Uint8Array
       );
 
-      await Promise.any(pool.publish(RELAYS, event));
+      await Promise.any(pool.publish(relays, event));
       setText("");
       setOpen(false);
     } catch (e) {
