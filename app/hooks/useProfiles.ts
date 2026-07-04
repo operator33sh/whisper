@@ -17,44 +17,69 @@ interface ProfileStore {
   fetchProfiles: (pool: SimplePool, pubkeys: string[]) => void;
 }
 
-export const useProfiles = create<ProfileStore>((set, get) => ({
-  profiles: new Map(),
-  fetching: new Set(),
+// Batch pubkeys arriving within 150ms into a single subscription
+let pendingPubkeys: string[] = [];
+let batchPool: SimplePool | null = null;
+let batchTimer: ReturnType<typeof setTimeout> | null = null;
+let storeSet: ((fn: (s: ProfileStore) => Partial<ProfileStore>) => void) | null = null;
 
-  fetchProfiles: (pool: SimplePool, pubkeys: string[]) => {
-    const { profiles, fetching } = get();
-    const missing = pubkeys.filter((pk) => !profiles.has(pk) && !fetching.has(pk));
-    if (missing.length === 0) return;
+function flushBatch() {
+  batchTimer = null;
+  const toFetch = pendingPubkeys.splice(0);
+  const pool = batchPool;
+  batchPool = null;
+  if (toFetch.length === 0 || !pool || !storeSet) return;
 
-    set((s) => {
-      const next = new Set(s.fetching);
-      missing.forEach((pk) => next.add(pk));
-      return { fetching: next };
-    });
-
-    console.log("[useProfiles] fetching", missing.length, "profiles");
-
-    const sub = pool.subscribeMany(useRelays.getState().relays, [{ kinds: [0], authors: missing }], {
-      onevent(event) {
-        try {
-          const profile: Profile = JSON.parse(event.content);
-          set((s) => {
-            const next = new Map(s.profiles);
-            next.set(event.pubkey, profile);
-            return { profiles: next };
-          });
-        } catch {
-          // malformed profile content
-        }
-      },
-      oneose() {
+  const set = storeSet;
+  const sub = pool.subscribeMany(useRelays.getState().relays, [{ kinds: [0], authors: toFetch }], {
+    onevent(event) {
+      try {
+        const profile: Profile = JSON.parse(event.content);
         set((s) => {
-          const next = new Set(s.fetching);
-          missing.forEach((pk) => next.delete(pk));
-          return { fetching: next };
+          const next = new Map(s.profiles);
+          next.set(event.pubkey, profile);
+          return { profiles: next };
         });
-        sub.close();
-      },
-    });
-  },
-}));
+      } catch {
+        // malformed profile content
+      }
+    },
+    oneose() {
+      set((s) => {
+        const next = new Set(s.fetching);
+        toFetch.forEach((pk) => next.delete(pk));
+        return { fetching: next };
+      });
+      sub.close();
+    },
+  });
+}
+
+export const useProfiles = create<ProfileStore>((set, get) => {
+  storeSet = set;
+
+  return {
+    profiles: new Map(),
+    fetching: new Set(),
+
+    fetchProfiles: (pool: SimplePool, pubkeys: string[]) => {
+      const { profiles, fetching } = get();
+      const missing = pubkeys.filter((pk) => !profiles.has(pk) && !fetching.has(pk));
+      if (missing.length === 0) return;
+
+      // Mark as fetching immediately to prevent duplicate requests
+      set((s) => {
+        const next = new Set(s.fetching);
+        missing.forEach((pk) => next.add(pk));
+        return { fetching: next };
+      });
+
+      pendingPubkeys.push(...missing);
+      batchPool = pool;
+
+      if (!batchTimer) {
+        batchTimer = setTimeout(flushBatch, 150);
+      }
+    },
+  };
+});
