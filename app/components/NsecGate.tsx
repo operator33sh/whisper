@@ -5,6 +5,7 @@ import { createContext, useContext, useState, useEffect, useRef } from "react";
 const STORAGE_KEY = "whisper:nsec";
 
 interface NsecContextValue {
+  unlocked: boolean;
   logout: () => void;
 }
 
@@ -93,7 +94,7 @@ export default function NsecGate({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <NsecContext.Provider value={{ logout }}>
+    <NsecContext.Provider value={{ unlocked, logout }}>
       {children}
       {!unlocked && <LoginModal onLogin={() => setUnlocked(true)} />}
     </NsecContext.Provider>

@@ -10,7 +10,7 @@ import { useRelays } from "@/app/hooks/useRelays";
 import RelaySettings from "@/app/components/settings/RelaySettings";
 
 export default function Shell({ children }: { children: React.ReactNode }) {
-  const { logout } = useNsec();
+  const { unlocked, logout } = useNsec();
   const { pool } = useNostrContext();
   const loadFollows = useFollows((s) => s.loadFollows);
   const { activeView, setView, hasPendingMentions } = useMissionControl();
@@ -22,10 +22,11 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   }, [initRelays]);
 
   useEffect(() => {
+    if (!unlocked) return;
     const pubkey = getNsecPubkey();
     if (!pubkey) return;
     loadFollows(pool, pubkey);
-  }, [pool, loadFollows]);
+  }, [pool, loadFollows, unlocked]);
 
   return (
     <div className="h-screen flex">

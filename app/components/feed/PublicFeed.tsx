@@ -78,7 +78,7 @@ export default function PublicFeed() {
         )}
         <ul ref={feedRef} className="relative space-y-8 overflow-y-auto h-full pr-2">
           {filtered.map((event: Event) => (
-            <li key={event.id} className="leading-relaxed">
+            <li key={event.id} className="leading-relaxed bg-[#f9f9f7]">
               <div className="flex items-center justify-between gap-4 mb-2">
                 <UserMeta pubkey={event.pubkey} />
                 <button

@@ -7,14 +7,17 @@ import PrivateFeed from "@/app/components/feed/PrivateFeed";
 import MissionControl from "@/app/components/mission-control/MissionControl";
 import { useMissionControl } from "@/app/hooks/useMissionControl";
 import { getNsecPubkey } from "@/app/hooks/useFollows";
+import { useNsec } from "@/app/components/NsecGate";
 
 export default function Home() {
   const activeView = useMissionControl((s) => s.activeView);
+  const { unlocked } = useNsec();
   const [pubkey, setPubkey] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!unlocked) return;
     setPubkey(getNsecPubkey());
-  }, []);
+  }, [unlocked]);
 
   return (
     <Shell>

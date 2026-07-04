@@ -136,18 +136,21 @@ export default function PrivateFeed() {
     }
   }
 
+  const displayEvents = events.filter((e: Event) => follows.includes(e.pubkey) && !e.tags.some(t => t[0] === 'e'));
+  const showSpinner = displayEvents.length === 0 && (loadingFollows || follows.length > 0);
+
   return (
     <section className="h-full flex flex-col overflow-hidden">
       <h2 className="text-2xl font-semibold mb-6">Following</h2>
       <div className="relative flex-1 overflow-hidden">
-        {(loadingFollows || loading) && (
+        {showSpinner && (
           <div className="absolute inset-0 flex items-start justify-center pt-8 pointer-events-none">
             <div className="w-6 h-6 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
           </div>
         )}
         <ul ref={feedRef} className="relative space-y-8 overflow-y-auto h-full pr-2">
-          {events.filter((e: Event) => follows.includes(e.pubkey) && !e.tags.some(t => t[0] === 'e')).map((event: Event) => (
-            <li key={event.id} className="leading-relaxed">
+          {displayEvents.map((event: Event) => (
+            <li key={event.id} className="leading-relaxed bg-[#f9f9f7]">
               <div className="flex items-center justify-between gap-4 mb-2">
                 <UserMeta pubkey={event.pubkey} />
                 <button
