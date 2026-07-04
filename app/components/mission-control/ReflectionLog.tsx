@@ -1,11 +1,55 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import type { Event } from "nostr-tools";
 import { useNostrFeed } from "@/app/hooks/useNostr";
+import { useNostrContext } from "@/app/components/NostrProvider";
+import { useRelays } from "@/app/hooks/useRelays";
 import PostBody from "@/app/components/ui/PostBody";
+import PostContent from "@/app/components/ui/PostContent";
+import UserMeta from "@/app/components/ui/UserMeta";
 import { timeAgo } from "@/app/lib/timeAgo";
 
 interface Props {
   pubkey: string;
+}
+
+function getRootId(event: Event): string | null {
+  const eTags = event.tags.filter((t) => t[0] === "e");
+  if (eTags.length === 0) return null;
+  return eTags.find((t) => t[3] === "root")?.[1] ?? eTags[0][1];
+}
+
+function RootPreview({ rootId }: { rootId: string }) {
+  const { pool } = useNostrContext();
+  const relays = useRelays((s) => s.relays);
+  const [root, setRoot] = useState<Event | null>(null);
+
+  useEffect(() => {
+    const sub = pool.subscribeMany(relays, [{ ids: [rootId], kinds: [1], limit: 1 }], {
+      onevent(event: Event) {
+        setRoot(event);
+      },
+      oneose() {
+        sub.close();
+      },
+    });
+    return () => sub.close();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rootId, pool, relays.join(",")]);
+
+  if (!root) return null;
+
+  return (
+    <div className="mb-3 opacity-50">
+      <div className="mb-1">
+        <UserMeta pubkey={root.pubkey} size={20} />
+      </div>
+      <div className="text-sm line-clamp-3">
+        <PostContent content={root.content} />
+      </div>
+    </div>
+  );
 }
 
 export default function ReflectionLog({ pubkey }: Props) {
@@ -29,14 +73,23 @@ export default function ReflectionLog({ pubkey }: Props) {
 
   return (
     <ul className="flex flex-col gap-10">
-      {events.map((event) => (
-        <li key={event.id} className="leading-relaxed">
-          <PostBody
-            content={event.content}
-            timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
-          />
-        </li>
-      ))}
+      {events.map((event) => {
+        const rootId = getRootId(event);
+        return (
+          <li key={event.id} className="leading-relaxed">
+            {rootId && (
+              <>
+                <RootPreview rootId={rootId} />
+                <hr className="border-dashed border-[#2d2d2d]/20 mb-3" />
+              </>
+            )}
+            <PostBody
+              content={event.content}
+              timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
+            />
+          </li>
+        );
+      })}
     </ul>
   );
 }
