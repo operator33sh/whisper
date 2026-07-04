@@ -13,11 +13,21 @@ interface Props {
   event: Event; // the reply/mention directed at the user
 }
 
+// The direct parent being replied to (NIP-10: "reply" marker, fallback to "root", legacy: last e-tag)
+function getParentEventId(event: Event): string | null {
+  const eTags = event.tags.filter((t) => t[0] === "e");
+  const replyTag = eTags.find((t) => t[3] === "reply");
+  if (replyTag) return replyTag[1];
+  const rootTag = eTags.find((t) => t[3] === "root");
+  if (rootTag) return rootTag[1];
+  return eTags.at(-1)?.[1] ?? null;
+}
+
+// The thread root, for passing to ReplyButton so threading stays correct
 function getRootEventId(event: Event): string | null {
   const eTags = event.tags.filter((t) => t[0] === "e");
   const rootTag = eTags.find((t) => t[3] === "root");
   if (rootTag) return rootTag[1];
-  // legacy: first e-tag is root
   return eTags[0]?.[1] ?? null;
 }
 
@@ -27,16 +37,17 @@ function timestamp(event: Event): string {
 
 export default function ResonanceItem({ event }: Props) {
   const { pool } = useNostrContext();
-  const [rootEvent, setRootEvent] = useState<Event | null>(null);
+  const [parentEvent, setParentEvent] = useState<Event | null>(null);
 
+  const parentId = getParentEventId(event);
   const rootId = getRootEventId(event);
 
   useEffect(() => {
-    if (!rootId || rootId === event.id) return;
+    if (!parentId || parentId === event.id) return;
 
-    const sub = pool.subscribeMany(RELAYS, [{ ids: [rootId], kinds: [1] }], {
+    const sub = pool.subscribeMany(RELAYS, [{ ids: [parentId], kinds: [1] }], {
       onevent(e: Event) {
-        setRootEvent(e);
+        setParentEvent(e);
         sub.close();
       },
       oneose() {
@@ -45,25 +56,27 @@ export default function ResonanceItem({ event }: Props) {
     });
 
     return () => sub.close();
-  }, [rootId, event.id, pool]);
+  }, [parentId, event.id, pool]);
+
+  const hasParent = parentEvent && parentEvent.id !== event.id;
 
   return (
     <li className="flex flex-col gap-3 leading-relaxed">
-      {/* Root event: the user's original post */}
-      {rootEvent && rootEvent.id !== event.id && (
+      {/* Parent: the message directly replied to */}
+      {hasParent && (
         <div>
           <div className="mb-2">
-            <UserMeta pubkey={rootEvent.pubkey} />
+            <UserMeta pubkey={parentEvent.pubkey} />
           </div>
           <PostBody
-            content={rootEvent.content}
-            timestamp={timestamp(rootEvent)}
+            content={parentEvent.content}
+            timestamp={timestamp(parentEvent)}
           />
         </div>
       )}
 
-      {/* Reply: indented below */}
-      <div className={rootEvent && rootEvent.id !== event.id ? "pl-5 border-l border-[#2d2d2d]/15" : ""}>
+      {/* The reply/mention: indented below parent */}
+      <div className={hasParent ? "pl-5 border-l border-[#2d2d2d]/15" : ""}>
         <div className="mb-2">
           <UserMeta pubkey={event.pubkey} />
         </div>
