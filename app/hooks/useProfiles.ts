@@ -34,7 +34,7 @@ export const useProfiles = create<ProfileStore>((set, get) => ({
 
     console.log("[useProfiles] fetching", missing.length, "profiles");
 
-    pool.subscribeMany(useRelays.getState().relays, [{ kinds: [0], authors: missing }], {
+    const sub = pool.subscribeMany(useRelays.getState().relays, [{ kinds: [0], authors: missing }], {
       onevent(event) {
         try {
           const profile: Profile = JSON.parse(event.content);
@@ -53,6 +53,7 @@ export const useProfiles = create<ProfileStore>((set, get) => ({
           missing.forEach((pk) => next.delete(pk));
           return { fetching: next };
         });
+        sub.close();
       },
     });
   },
