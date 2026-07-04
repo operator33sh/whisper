@@ -71,7 +71,7 @@ export default function PublicFeed() {
     <section className="h-full flex flex-col overflow-hidden">
       <h2 className="text-2xl font-semibold mb-6">Feed</h2>
       <div className="relative flex-1 overflow-hidden">
-        {loading && (
+        {(loading || (events.length > 0 && filtered.length === 0)) && (
           <div className="absolute inset-0 flex items-start justify-center pt-8 pointer-events-none">
             <div className="w-6 h-6 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
           </div>
