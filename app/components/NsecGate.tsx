@@ -35,6 +35,9 @@ function LoginModal({ onLogin }: { onLogin: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-[#f9f9f7] rounded-lg p-10 w-full max-w-md flex flex-col gap-6">
+        <div className="flex justify-center">
+          <img src="/logo.jpg" alt="Whisper" className="w-20 h-20 rounded-2xl" />
+        </div>
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold">Enter your private key</h2>
           <a
