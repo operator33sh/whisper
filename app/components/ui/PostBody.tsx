@@ -5,6 +5,7 @@ import PostContent from "@/app/components/ui/PostContent";
 
 const IMAGE_REGEX = /https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|avif)(?:\?\S*)?/i;
 const VIDEO_REGEX = /https?:\/\/\S+\.(?:mp4|webm|mov|ogg)(?:\?\S*)?/i;
+const YOUTUBE_REGEX = /https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)[\w-]+/i;
 const EMBED_REGEX = /nostr:(?:nevent|note)1[a-z0-9]+/;
 
 interface Props {
@@ -20,6 +21,7 @@ export default function PostBody({ content, timestamp, action }: Props) {
 
   const hasImage = IMAGE_REGEX.test(content);
   const hasVideo = VIDEO_REGEX.test(content);
+  const hasYouTube = YOUTUBE_REGEX.test(content);
   const hasEmbed = EMBED_REGEX.test(content);
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export default function PostBody({ content, timestamp, action }: Props) {
     <div>
       <div
         ref={ref}
-        className={!hasImage && !hasVideo && !hasEmbed && !expanded ? "line-clamp-8" : undefined}
+        className={!hasImage && !hasVideo && !hasYouTube && !hasEmbed && !expanded ? "line-clamp-8" : undefined}
       >
         <PostContent content={content} />
       </div>
@@ -43,7 +45,7 @@ export default function PostBody({ content, timestamp, action }: Props) {
         </span>
         <div className="flex items-center gap-3">
           {action}
-          {truncated && !hasImage && !hasVideo && (
+          {truncated && !hasImage && !hasVideo && !hasYouTube && (
             <button
               onClick={() => setExpanded((v) => !v)}
               className="text-sm text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)]"

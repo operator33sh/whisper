@@ -25,6 +25,12 @@ const VIDEO_REGEX = /\.(?:mp4|webm|mov|ogg)(?:\?|$)/i;
 const URL_REGEX = /(https?:\/\/[^\s]+)/g;
 const NPROFILE_REGEX = /(nostr:n(?:profile|pub)1[a-z0-9]+)/g;
 const NEVENT_REGEX = /(nostr:(?:nevent|note)1[a-z0-9]+)/g;
+const YOUTUBE_REGEX = /(https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)[\w-]+(?:[?&][\w=&%-]*)?)/gi;
+
+function getYouTubeId(url: string): string | null {
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]+)/);
+  return m ? m[1] : null;
+}
 
 function renderTextWithLinks(text: string, keyPrefix: string) {
   // Split on nprofile/npub references first, then URLs within remaining text
@@ -70,33 +76,53 @@ export default function PostContent({ content }: { content: string }) {
         }
         if (!chunk) return null;
 
-        const parts = chunk.split(MEDIA_REGEX);
-        return parts.map((part, i) => {
-          if (MEDIA_REGEX.test(part)) {
-            MEDIA_REGEX.lastIndex = 0;
-            if (VIDEO_REGEX.test(part)) {
+        const ytChunks = chunk.split(YOUTUBE_REGEX);
+        return ytChunks.map((ytChunk, yi) => {
+          if (YOUTUBE_REGEX.test(ytChunk)) {
+            YOUTUBE_REGEX.lastIndex = 0;
+            const id = getYouTubeId(ytChunk);
+            if (id) {
               return (
-                <video
-                  key={`${ci}-${i}`}
-                  src={part}
-                  controls
-                  className="rounded max-w-full max-h-96"
-                  preload="metadata"
+                <iframe
+                  key={`${ci}-yt${yi}`}
+                  src={`https://www.youtube-nocookie.com/embed/${id}`}
+                  className="rounded w-full aspect-video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
                 />
               );
             }
-            return (
-              <img
-                key={`${ci}-${i}`}
-                src={part}
-                alt=""
-                className="rounded max-w-full cursor-pointer"
-                loading="lazy"
-                onClick={() => setLightbox(part)}
-              />
-            );
           }
-          return part ? <span key={`${ci}-${i}`}>{renderTextWithLinks(part, `${ci}-${i}`)}</span> : null;
+          if (!ytChunk) return null;
+
+          const parts = ytChunk.split(MEDIA_REGEX);
+          return parts.map((part, i) => {
+            if (MEDIA_REGEX.test(part)) {
+              MEDIA_REGEX.lastIndex = 0;
+              if (VIDEO_REGEX.test(part)) {
+                return (
+                  <video
+                    key={`${ci}-${yi}-${i}`}
+                    src={part}
+                    controls
+                    className="rounded max-w-full max-h-96"
+                    preload="metadata"
+                  />
+                );
+              }
+              return (
+                <img
+                  key={`${ci}-${yi}-${i}`}
+                  src={part}
+                  alt=""
+                  className="rounded max-w-full cursor-pointer"
+                  loading="lazy"
+                  onClick={() => setLightbox(part)}
+                />
+              );
+            }
+            return part ? <span key={`${ci}-${yi}-${i}`}>{renderTextWithLinks(part, `${ci}-${yi}-${i}`)}</span> : null;
+          });
         });
       })}
       {lightbox && <ImageModal src={lightbox} onClose={() => setLightbox(null)} />}
