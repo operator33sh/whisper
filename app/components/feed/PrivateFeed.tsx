@@ -18,22 +18,13 @@ export default function PrivateFeed() {
   const loadingFollows = useFollows((s) => s.loadingFollows);
   const unfollow = useFollows((s) => s.unfollow);
   const relays = useRelays((s) => s.relays);
-  const relaysKey = relays.join(",");
   const replyCounts = useReplyCounts();
   const [pending, setPending] = useState<string | null>(null);
 
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const subscribedAuthors = useRef<Set<string>>(new Set());
   const feedRef = useRef<HTMLUListElement>(null);
-
-  // Reset subscriptions when relay list changes so all authors are re-fetched
-  useEffect(() => {
-    subscribedAuthors.current = new Set();
-    setEvents([]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [relaysKey]);
 
   useEffect(() => {
     function handleWheel(e: WheelEvent) {
@@ -47,21 +38,18 @@ export default function PrivateFeed() {
     return () => window.removeEventListener("wheel", handleWheel);
   }, []);
 
+  // Re-subscribe whenever follows or relays change
   useEffect(() => {
     if (loadingFollows) return;
-
-    const newAuthors = follows.filter((pk) => !subscribedAuthors.current.has(pk));
-    if (newAuthors.length === 0) {
+    if (follows.length === 0) {
       setLoading(false);
       return;
     }
 
-    const isInitialLoad = subscribedAuthors.current.size === 0;
-    if (isInitialLoad) setLoading(true);
+    setLoading(true);
+    setEvents([]);
 
-    newAuthors.forEach((pk) => subscribedAuthors.current.add(pk));
-
-    const sub = pool.subscribeMany(relays, [{ kinds: [1], authors: newAuthors, limit: 100 }], {
+    const sub = pool.subscribeMany(relays, [{ kinds: [1], authors: follows, limit: 100 }], {
       onevent(event: Event) {
         setEvents((prev) => {
           if (prev.find((e) => e.id === event.id)) return prev;
@@ -69,13 +57,13 @@ export default function PrivateFeed() {
         });
       },
       oneose() {
-        if (isInitialLoad) setLoading(false);
+        setLoading(false);
       },
     });
 
     return () => sub.close();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [follows, loadingFollows, pool, relaysKey]);
+  }, [follows.join(","), loadingFollows, pool, relays.join(",")]);
 
   const loadMore = useCallback(() => {
     setEvents((current) => {
@@ -83,11 +71,10 @@ export default function PrivateFeed() {
       if (!oldest) return current;
 
       setLoadingMore(true);
-      const authors = [...subscribedAuthors.current];
 
       const sub = pool.subscribeMany(
         relays,
-        [{ kinds: [1], authors, until: oldest.created_at - 1, limit: 100 }],
+        [{ kinds: [1], authors: follows, until: oldest.created_at - 1, limit: 100 }],
         {
           onevent(event: Event) {
             setEvents((prev) => {
@@ -104,7 +91,8 @@ export default function PrivateFeed() {
 
       return current;
     });
-  }, [pool]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pool, follows.join(","), relays.join(",")]);
 
   async function handleUnfollow(pubkey: string) {
     setPending(pubkey);
