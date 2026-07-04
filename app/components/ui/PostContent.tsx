@@ -62,7 +62,7 @@ export default function PostContent({ content }: { content: string }) {
   const neventChunks = content.split(NEVENT_REGEX);
 
   return (
-    <div className="break-words min-w-0 space-y-2">
+    <div className="break-words min-w-0 space-y-2 whitespace-pre-wrap">
       {neventChunks.map((chunk, ci) => {
         if (NEVENT_REGEX.test(chunk)) {
           NEVENT_REGEX.lastIndex = 0;
