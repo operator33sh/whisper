@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import NprofileLink from "@/app/components/ui/NprofileLink";
+import NeventEmbed from "@/app/components/ui/NeventEmbed";
 
 function ImageModal({ src, onClose }: { src: string; onClose: () => void }) {
   return (
@@ -23,6 +24,7 @@ const MEDIA_REGEX = /(https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|avif|mp4|webm|mov
 const VIDEO_REGEX = /\.(?:mp4|webm|mov|ogg)(?:\?|$)/i;
 const URL_REGEX = /(https?:\/\/[^\s]+)/g;
 const NPROFILE_REGEX = /(nostr:n(?:profile|pub)1[a-z0-9]+)/g;
+const NEVENT_REGEX = /(nostr:(?:nevent|note)1[a-z0-9]+)/g;
 
 function renderTextWithLinks(text: string, keyPrefix: string) {
   // Split on nprofile/npub references first, then URLs within remaining text
@@ -57,36 +59,45 @@ function renderTextWithLinks(text: string, keyPrefix: string) {
 
 export default function PostContent({ content }: { content: string }) {
   const [lightbox, setLightbox] = useState<string | null>(null);
-  const parts = content.split(MEDIA_REGEX);
+  const neventChunks = content.split(NEVENT_REGEX);
 
   return (
     <div className="break-words min-w-0 space-y-2">
-      {parts.map((part, i) => {
-        if (MEDIA_REGEX.test(part)) {
-          MEDIA_REGEX.lastIndex = 0;
-          if (VIDEO_REGEX.test(part)) {
+      {neventChunks.map((chunk, ci) => {
+        if (NEVENT_REGEX.test(chunk)) {
+          NEVENT_REGEX.lastIndex = 0;
+          return <NeventEmbed key={ci} raw={chunk} />;
+        }
+        if (!chunk) return null;
+
+        const parts = chunk.split(MEDIA_REGEX);
+        return parts.map((part, i) => {
+          if (MEDIA_REGEX.test(part)) {
+            MEDIA_REGEX.lastIndex = 0;
+            if (VIDEO_REGEX.test(part)) {
+              return (
+                <video
+                  key={`${ci}-${i}`}
+                  src={part}
+                  controls
+                  className="rounded max-w-full max-h-96"
+                  preload="metadata"
+                />
+              );
+            }
             return (
-              <video
-                key={i}
+              <img
+                key={`${ci}-${i}`}
                 src={part}
-                controls
-                className="rounded max-w-full max-h-96"
-                preload="metadata"
+                alt=""
+                className="rounded max-w-full cursor-pointer"
+                loading="lazy"
+                onClick={() => setLightbox(part)}
               />
             );
           }
-          return (
-            <img
-              key={i}
-              src={part}
-              alt=""
-              className="rounded max-w-full cursor-pointer"
-              loading="lazy"
-              onClick={() => setLightbox(part)}
-            />
-          );
-        }
-        return part ? <span key={i}>{renderTextWithLinks(part, String(i))}</span> : null;
+          return part ? <span key={`${ci}-${i}`}>{renderTextWithLinks(part, `${ci}-${i}`)}</span> : null;
+        });
       })}
       {lightbox && <ImageModal src={lightbox} onClose={() => setLightbox(null)} />}
     </div>
