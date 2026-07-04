@@ -41,11 +41,9 @@ function RootPreview({ rootId }: { rootId: string }) {
   if (!root) return null;
 
   return (
-    <div className="mb-3 opacity-50">
-      <div className="mb-1">
-        <UserMeta pubkey={root.pubkey} size={20} />
-      </div>
-      <div className="text-sm line-clamp-3">
+    <div className="mb-1">
+      <UserMeta pubkey={root.pubkey} size={20} />
+      <div className="mt-1 text-sm line-clamp-3">
         <PostContent content={root.content} />
       </div>
     </div>
@@ -77,16 +75,24 @@ export default function ReflectionLog({ pubkey }: Props) {
         const rootId = getRootId(event);
         return (
           <li key={event.id} className="leading-relaxed">
-            {rootId && (
+            {rootId ? (
               <>
-                <RootPreview rootId={rootId} />
-                <hr className="border-dashed border-[#2d2d2d]/20 mb-3" />
+                <div className="pl-4 border-l-2 border-dashed border-[#2d2d2d]/20">
+                  <RootPreview rootId={rootId} />
+                </div>
+                <div className="pl-4 border-l-2 border-[#2d2d2d]/30">
+                  <PostBody
+                    content={event.content}
+                    timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
+                  />
+                </div>
               </>
+            ) : (
+              <PostBody
+                content={event.content}
+                timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
+              />
             )}
-            <PostBody
-              content={event.content}
-              timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
-            />
           </li>
         );
       })}
