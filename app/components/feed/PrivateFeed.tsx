@@ -21,7 +21,7 @@ export default function PrivateFeed() {
   const [pending, setPending] = useState<string | null>(null);
 
   const [events, setEvents] = useState<Event[]>([]);
-  const replyCounts = useReplyCounts(events.map((e) => e.id));
+  const { counts: replyCounts } = useReplyCounts(events.map((e) => e.id));
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
