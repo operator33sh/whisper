@@ -11,6 +11,7 @@ export function useNostrFeed(filter: Filter) {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const filterKey = JSON.stringify(filter);
   const relaysKey = relays.join(",");
 
@@ -24,6 +25,7 @@ export function useNostrFeed(filter: Filter) {
     }
 
     setLoading(true);
+    setHasMore(true);
     console.log("[useNostrFeed] subscribing with filter", parsed);
 
     const sub = pool.subscribeMany(relays, [parsed], {
@@ -49,15 +51,18 @@ export function useNostrFeed(filter: Filter) {
 
       setLoadingMore(true);
       const parsed: Filter = JSON.parse(filterKey);
+      let batchCount = 0;
 
       const sub = pool.subscribeMany(relays, [{ ...parsed, until: oldest.created_at - 1 }], {
         onevent(event: Event) {
+          batchCount++;
           setEvents((prev) => {
             if (prev.find((e) => e.id === event.id)) return prev;
             return [...prev, event].sort((a, b) => b.created_at - a.created_at);
           });
         },
         oneose() {
+          if (batchCount === 0) setHasMore(false);
           setLoadingMore(false);
           sub.close();
         },
@@ -68,5 +73,5 @@ export function useNostrFeed(filter: Filter) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pool, filterKey, relaysKey]);
 
-  return { events, loading, loadMore, loadingMore };
+  return { events, loading, loadMore, loadingMore, hasMore };
 }

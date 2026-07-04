@@ -24,7 +24,9 @@ export default function PrivateFeed() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const feedRef = useRef<HTMLUListElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const subscribedAuthors = useRef<Set<string>>(new Set());
   const activeRelaysKey = useRef<string>("");
 
@@ -52,6 +54,7 @@ export default function PrivateFeed() {
       subscribedAuthors.current = new Set();
       setEvents([]);
       setLoading(true);
+      setHasMore(true);
     }
 
     // Only fetch authors not yet subscribed to
@@ -81,18 +84,21 @@ export default function PrivateFeed() {
       if (!oldest) return current;
 
       setLoadingMore(true);
+      let batchCount = 0;
 
       const sub = pool.subscribeMany(
         relays,
         [{ kinds: [1], authors: follows, until: oldest.created_at - 1, limit: 100 }],
         {
           onevent(event: Event) {
+            batchCount++;
             setEvents((prev) => {
               if (prev.find((e) => e.id === event.id)) return prev;
               return [...prev, event].sort((a, b) => b.created_at - a.created_at);
             });
           },
           oneose() {
+            if (batchCount === 0) setHasMore(false);
             setLoadingMore(false);
             sub.close();
           },
@@ -103,6 +109,21 @@ export default function PrivateFeed() {
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pool, follows.join(","), relays.join(",")]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !loadingMore && hasMore && !loading && !loadingFollows) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loadMore, loadingMore, hasMore, loading, loadingFollows]);
 
   async function handleUnfollow(pubkey: string) {
     setPending(pubkey);
@@ -145,14 +166,8 @@ export default function PrivateFeed() {
               <PostReplies eventId={event.id} count={replyCounts.get(event.id) ?? 0} replyCounts={replyCounts} />
             </li>
           ))}
-          <li className="pt-4 pb-2">
-            <button
-              onClick={loadMore}
-              disabled={loadingMore}
-              className="w-full text-sm text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loadingMore ? "Loading…" : "Load more"}
-            </button>
+          <li>
+            <div ref={sentinelRef} className="h-4" />
           </li>
         </ul>
       </div>

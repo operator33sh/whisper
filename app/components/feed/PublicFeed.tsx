@@ -14,12 +14,13 @@ import type { Event } from "nostr-tools";
 
 export default function PublicFeed() {
   const { pool } = useNostrContext();
-  const { events, loading, loadMore, loadingMore } = useNostrFeed({ kinds: [1], limit: 1000 });
+  const { events, loading, loadMore, loadingMore, hasMore } = useNostrFeed({ kinds: [1], limit: 1000 });
   const reactions = useReplyCounts();
   const follows = useFollows((s) => s.follows);
   const follow = useFollows((s) => s.follow);
   const [pending, setPending] = useState<string | null>(null);
   const feedRef = useRef<HTMLUListElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleWheel(e: WheelEvent) {
@@ -32,6 +33,21 @@ export default function PublicFeed() {
     window.addEventListener("wheel", handleWheel, { passive: false });
     return () => window.removeEventListener("wheel", handleWheel);
   }, []);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !loadingMore && hasMore && !loading) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loadMore, loadingMore, hasMore, loading]);
 
   async function handleFollow(pubkey: string) {
     setPending(pubkey);
@@ -51,12 +67,6 @@ export default function PublicFeed() {
       !e.tags.some(t => t[0] === 'e')
   );
 
-  if (events.length > 0 && reactions.size > 0 && filtered.length === 0) {
-    console.log("[PublicFeed] crosscheck miss — posts:", events.length, "reaction entries:", reactions.size);
-    console.log("[PublicFeed] sample post id:", events[0].id);
-    console.log("[PublicFeed] sample reaction key:", [...reactions.keys()][0]);
-  }
-
   return (
     <section className="h-full flex flex-col overflow-hidden">
       <h2 className="text-2xl font-semibold mb-6">Feed</h2>
@@ -67,38 +77,30 @@ export default function PublicFeed() {
           </div>
         )}
         <ul ref={feedRef} className="relative space-y-8 overflow-y-auto h-full pr-2">
-        {filtered.map((event: Event) => (
-          <li key={event.id} className="leading-relaxed">
-            <div className="flex items-center justify-between gap-4 mb-2">
-              <UserMeta pubkey={event.pubkey} />
-              <button
-                onClick={() => handleFollow(event.pubkey)}
-                disabled={pending === event.pubkey}
-                className="shrink-0 bg-black text-white text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] hover:bg-[#2d2d2d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {pending === event.pubkey ? "Following…" : "Follow"}
-              </button>
-            </div>
-            <PostBody
-              content={event.content}
-              timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
-              action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} />}
-            />
-            <PostReplies eventId={event.id} count={reactions.get(event.id) ?? 0} replyCounts={reactions} />
+          {filtered.map((event: Event) => (
+            <li key={event.id} className="leading-relaxed">
+              <div className="flex items-center justify-between gap-4 mb-2">
+                <UserMeta pubkey={event.pubkey} />
+                <button
+                  onClick={() => handleFollow(event.pubkey)}
+                  disabled={pending === event.pubkey}
+                  className="shrink-0 bg-black text-white text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] hover:bg-[#2d2d2d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {pending === event.pubkey ? "Following…" : "Follow"}
+                </button>
+              </div>
+              <PostBody
+                content={event.content}
+                timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
+                action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} />}
+              />
+              <PostReplies eventId={event.id} count={reactions.get(event.id) ?? 0} replyCounts={reactions} />
+            </li>
+          ))}
+          <li>
+            <div ref={sentinelRef} className="h-4" />
           </li>
-        ))}
-        {!loading && (
-          <li className="pt-4 pb-2">
-            <button
-              onClick={loadMore}
-              disabled={loadingMore}
-              className="w-full text-sm text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loadingMore ? "Loading…" : "Load more"}
-            </button>
-          </li>
-        )}
-      </ul>
+        </ul>
       </div>
     </section>
   );
