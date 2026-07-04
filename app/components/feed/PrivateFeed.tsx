@@ -118,12 +118,13 @@ export default function PrivateFeed() {
   return (
     <section className="h-full flex flex-col overflow-hidden">
       <h2 className="text-2xl font-semibold mb-6">Following</h2>
-      {(loadingFollows || loading) ? (
-        <div className="flex justify-center pt-8">
-          <div className="w-6 h-6 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
-        </div>
-      ) : (
-        <ul ref={feedRef} className="space-y-8 overflow-y-auto flex-1 pr-2">
+      <div className="relative flex-1 overflow-hidden">
+        {(loadingFollows || loading) && (
+          <div className="absolute inset-0 flex items-start justify-center pt-8 pointer-events-none">
+            <div className="w-6 h-6 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
+          </div>
+        )}
+        <ul ref={feedRef} className="relative space-y-8 overflow-y-auto h-full pr-2">
           {events.filter((e: Event) => follows.includes(e.pubkey) && !e.tags.some(t => t[0] === 'e')).map((event: Event) => (
             <li key={event.id} className="leading-relaxed">
               <div className="flex items-center justify-between gap-4 mb-2">
@@ -154,7 +155,7 @@ export default function PrivateFeed() {
             </button>
           </li>
         </ul>
-      )}
+      </div>
     </section>
   );
 }
