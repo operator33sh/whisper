@@ -16,6 +16,19 @@ export default function RelaySettings({ onClose }: Props) {
   const [input, setInput] = useState("");
   const [poolStatus, setPoolStatus] = useState<Map<string, boolean>>(new Map());
 
+  // Normalize URL the same way nostr-tools does internally
+  function normalize(url: string): string {
+    try {
+      const u = new URL(url.indexOf("://") === -1 ? "wss://" + url : url);
+      u.pathname = u.pathname.replace(/\/+/g, "/");
+      if (u.pathname.endsWith("/")) u.pathname = u.pathname.slice(0, -1);
+      if ((u.port === "80" && u.protocol === "ws:") || (u.port === "443" && u.protocol === "wss:")) u.port = "";
+      u.searchParams.sort();
+      u.hash = "";
+      return u.toString();
+    } catch { return url; }
+  }
+
   // Poll pool connection status every 2s
   useEffect(() => {
     function refresh() {
@@ -33,7 +46,7 @@ export default function RelaySettings({ onClose }: Props) {
     setInput("");
   }
 
-  const connectedCount = [...poolStatus.values()].filter(Boolean).length;
+  const connectedCount = relays.filter((r) => poolStatus.get(normalize(r))).length;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -47,7 +60,7 @@ export default function RelaySettings({ onClose }: Props) {
 
         <ul className="flex flex-col gap-3">
           {relays.map((relay) => {
-            const isConnected = poolStatus.get(relay) ?? poolStatus.get(relay.replace(/\/$/, "")) ?? false;
+            const isConnected = poolStatus.get(normalize(relay)) ?? false;
             return (
               <li key={relay} className="flex items-center gap-3">
                 <span
