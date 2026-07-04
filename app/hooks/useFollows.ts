@@ -7,6 +7,7 @@ import { decode } from "nostr-tools/nip19";
 import type { Event, SimplePool } from "nostr-tools";
 
 const STORAGE_KEY = "whisper:nsec";
+const FOLLOWS_CACHE_PREFIX = "whisper:follows:";
 
 interface FollowStore {
   follows: string[];
@@ -24,15 +25,24 @@ export const useFollows = create<FollowStore>((set, get) => ({
   setFollows: (pubkeys) => set({ follows: pubkeys }),
 
   loadFollows: (pool: SimplePool, pubkey: string) => {
-    console.log("[loadFollows] fetching kind:3 for", pubkey);
-    set({ loadingFollows: true });
+    const cacheKey = FOLLOWS_CACHE_PREFIX + pubkey;
 
+    // Use cached follows immediately so PrivateFeed starts without waiting
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          set({ follows: parsed, loadingFollows: false });
+        }
+      }
+    } catch {}
+
+    // Fetch fresh from relays in background; update if list changed
     const sub = pool.subscribeMany(useRelays.getState().relays, [{ kinds: [3], authors: [pubkey], limit: 1 }], {
       onevent(event: Event) {
-        const pubkeys = event.tags
-          .filter((t) => t[0] === "p")
-          .map((t) => t[1]);
-        console.log("[loadFollows] loaded", pubkeys.length, "follows");
+        const pubkeys = event.tags.filter((t) => t[0] === "p").map((t) => t[1]);
+        try { localStorage.setItem(cacheKey, JSON.stringify(pubkeys)); } catch {}
         set({ follows: pubkeys, loadingFollows: false });
         sub.close();
       },
@@ -80,6 +90,8 @@ export const useFollows = create<FollowStore>((set, get) => ({
       throw e;
     }
 
+    const pubkeyOwn = getNsecPubkey();
+    if (pubkeyOwn) try { localStorage.setItem(FOLLOWS_CACHE_PREFIX + pubkeyOwn, JSON.stringify(updatedFollows)); } catch {}
     set({ follows: updatedFollows });
   },
 
@@ -118,6 +130,8 @@ export const useFollows = create<FollowStore>((set, get) => ({
       throw e;
     }
 
+    const pubkeyOwn = getNsecPubkey();
+    if (pubkeyOwn) try { localStorage.setItem(FOLLOWS_CACHE_PREFIX + pubkeyOwn, JSON.stringify(updatedFollows)); } catch {}
     set({ follows: updatedFollows });
   },
 }));
