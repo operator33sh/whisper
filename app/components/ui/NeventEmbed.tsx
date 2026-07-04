@@ -51,12 +51,14 @@ export default function NeventEmbed({ raw }: { raw: string }) {
   if (failed) return <span className="text-[#2d2d2d]/40 text-sm italic">quoted post not found</span>;
   if (!event) return <span className="text-[#2d2d2d]/40 text-sm italic">loading…</span>;
 
+  const hasMedia = /https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|avif|mp4|webm|mov|ogg)(?:\?\S*)?/i.test(event.content);
+
   return (
     <blockquote className="border border-[#2d2d2d]/15 rounded px-3 pt-2 pb-3 my-1 text-sm text-[#2d2d2d]/75 bg-[#2d2d2d]/[0.02]">
       <div className="mb-1">
         <UserMeta pubkey={event.pubkey} />
       </div>
-      <div className="overflow-hidden max-h-40">
+      <div className={!hasMedia ? "overflow-hidden max-h-40" : undefined}>
         <PostContent content={event.content} />
       </div>
     </blockquote>
