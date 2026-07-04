@@ -5,6 +5,7 @@ import { decode } from "nostr-tools/nip19";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useRelays } from "@/app/hooks/useRelays";
 import UserMeta from "@/app/components/ui/UserMeta";
+import PostContent from "@/app/components/ui/PostContent";
 import type { Event } from "nostr-tools";
 
 export default function NeventEmbed({ raw }: { raw: string }) {
@@ -55,7 +56,9 @@ export default function NeventEmbed({ raw }: { raw: string }) {
       <div className="mb-1">
         <UserMeta pubkey={event.pubkey} />
       </div>
-      <p className="leading-relaxed line-clamp-4 break-words">{event.content}</p>
+      <div className="overflow-hidden max-h-40">
+        <PostContent content={event.content} />
+      </div>
     </blockquote>
   );
 }

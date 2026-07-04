@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import PostContent from "@/app/components/ui/PostContent";
 
 const IMAGE_REGEX = /https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|avif)(?:\?\S*)?/i;
+const EMBED_REGEX = /nostr:(?:nevent|note)1[a-z0-9]+/;
 
 interface Props {
   content: string;
@@ -17,6 +18,7 @@ export default function PostBody({ content, timestamp, action }: Props) {
   const [expanded, setExpanded] = useState(false);
 
   const hasImage = IMAGE_REGEX.test(content);
+  const hasEmbed = EMBED_REGEX.test(content);
 
   useEffect(() => {
     const el = ref.current;
@@ -29,7 +31,7 @@ export default function PostBody({ content, timestamp, action }: Props) {
     <div>
       <div
         ref={ref}
-        className={!hasImage && !expanded ? "max-h-48 overflow-hidden" : undefined}
+        className={!hasImage && !hasEmbed && !expanded ? "line-clamp-8" : undefined}
       >
         <PostContent content={content} />
       </div>
