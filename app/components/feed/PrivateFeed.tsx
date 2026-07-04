@@ -141,7 +141,10 @@ export default function PrivateFeed() {
 
   return (
     <section className="h-full flex flex-col overflow-hidden">
-      <h2 className="text-2xl font-semibold mb-6">Following</h2>
+      <header className="shrink-0 mb-6">
+        <h2 className="text-xs uppercase tracking-widest text-[#2d2d2d]/40 font-[family-name:var(--font-inter)]">Following</h2>
+        <p className="mt-1 text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">Posts from people you follow</p>
+      </header>
       <div className="relative flex-1 overflow-hidden">
         {showSpinner && (
           <div className="absolute inset-0 flex items-start justify-center pt-8 pointer-events-none">

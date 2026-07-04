@@ -69,7 +69,10 @@ export default function PublicFeed() {
 
   return (
     <section className="h-full flex flex-col overflow-hidden">
-      <h2 className="text-2xl font-semibold mb-6">Feed</h2>
+      <header className="shrink-0 mb-6">
+        <h2 className="text-xs uppercase tracking-widest text-[#2d2d2d]/40 font-[family-name:var(--font-inter)]">Feed</h2>
+        <p className="mt-1 text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">Discover posts from the network</p>
+      </header>
       <div className="relative flex-1 overflow-hidden">
         {(loading || reactionsLoading || filtered.length === 0) && (
           <div className="absolute inset-0 flex items-start justify-center pt-8 pointer-events-none">
