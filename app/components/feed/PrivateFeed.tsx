@@ -25,6 +25,8 @@ export default function PrivateFeed() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const feedRef = useRef<HTMLUListElement>(null);
+  const subscribedAuthors = useRef<Set<string>>(new Set());
+  const activeRelaysKey = useRef<string>("");
 
   useEffect(() => {
     function handleWheel(e: WheelEvent) {
@@ -38,18 +40,26 @@ export default function PrivateFeed() {
     return () => window.removeEventListener("wheel", handleWheel);
   }, []);
 
-  // Re-subscribe whenever follows or relays change
   useEffect(() => {
     if (loadingFollows) return;
-    if (follows.length === 0) {
-      setLoading(false);
-      return;
+    if (follows.length === 0) { setLoading(false); return; }
+
+    const relaysChanged = activeRelaysKey.current !== relays.join(",");
+
+    // Full reset only when relay list changes
+    if (relaysChanged) {
+      activeRelaysKey.current = relays.join(",");
+      subscribedAuthors.current = new Set();
+      setEvents([]);
+      setLoading(true);
     }
 
-    setLoading(true);
-    setEvents([]);
+    // Only fetch authors not yet subscribed to
+    const newAuthors = follows.filter((pk) => !subscribedAuthors.current.has(pk));
+    if (newAuthors.length === 0) { setLoading(false); return; }
+    newAuthors.forEach((pk) => subscribedAuthors.current.add(pk));
 
-    const sub = pool.subscribeMany(relays, [{ kinds: [1], authors: follows, limit: 100 }], {
+    const sub = pool.subscribeMany(relays, [{ kinds: [1], authors: newAuthors, limit: 100 }], {
       onevent(event: Event) {
         setEvents((prev) => {
           if (prev.find((e) => e.id === event.id)) return prev;
