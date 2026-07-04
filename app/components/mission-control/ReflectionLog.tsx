@@ -77,9 +77,8 @@ export default function ReflectionLog({ pubkey }: Props) {
           <li key={event.id} className="leading-relaxed">
             {rootId ? (
               <>
-                <div className="pl-4 border-l-2 border-dashed border-[#2d2d2d]/20">
-                  <RootPreview rootId={rootId} />
-                </div>
+                <RootPreview rootId={rootId} />
+                <div className="border-l-2 border-dashed border-[#2d2d2d]/20 h-3" />
                 <div className="pl-4 border-l-2 border-[#2d2d2d]/30">
                   <PostBody
                     content={event.content}
