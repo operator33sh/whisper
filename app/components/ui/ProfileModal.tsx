@@ -21,6 +21,7 @@ export default function ProfileModal({ pubkey, onClose }: Props) {
   const follow = useFollows((s) => s.follow);
   const unfollow = useFollows((s) => s.unfollow);
   const [pending, setPending] = useState(false);
+  const [photoOpen, setPhotoOpen] = useState(false);
 
   useEffect(() => {
     fetchProfiles(pool, [pubkey]);
@@ -53,8 +54,29 @@ export default function ProfileModal({ pubkey, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
         onWheel={(e) => e.stopPropagation()}
       >
+        {photoOpen && profile?.picture && (
+          <div
+            className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60]"
+            onClick={() => setPhotoOpen(false)}
+          >
+            <img
+              src={profile.picture}
+              alt=""
+              className="max-w-[90vw] max-h-[90vh] rounded-lg object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
+
         <div className="flex items-center gap-4">
-          <Avatar pubkey={pubkey} picture={profile?.picture} size={48} />
+          <button
+            type="button"
+            onClick={() => profile?.picture && setPhotoOpen(true)}
+            className={profile?.picture ? "cursor-pointer" : "cursor-default"}
+            aria-label="View profile picture"
+          >
+            <Avatar pubkey={pubkey} picture={profile?.picture} size={48} />
+          </button>
           <div className="flex flex-col min-w-0">
             <span className="font-semibold text-lg leading-tight truncate">{name}</span>
             <span className="text-xs text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] truncate">
