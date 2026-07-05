@@ -31,6 +31,8 @@ export default function PublicFeed() {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const postsRef = useRef<Event[]>([]);
   const replySubRef = useRef<{ close: () => void } | null>(null);
+  const seenReplies = useRef<Set<string>>(new Set());
+  const allPostIds = useRef<Set<string>>(new Set());
   const canLoadRef = useRef(false);
   const loadMoreRef = useRef<() => void>(() => {});
 
@@ -39,23 +41,22 @@ export default function PublicFeed() {
     canLoadRef.current = !loadingMore && hasMore && !loadingPosts;
   }, [loadingMore, hasMore, loadingPosts]);
 
-  // Open a single reply-count subscription covering all known post IDs
-  function openReplyCountSub(ids: string[]) {
+  // Reopen reply-count sub with all accumulated post IDs
+  function openReplyCountSub() {
+    const ids = Array.from(allPostIds.current);
     if (ids.length === 0) return;
     replySubRef.current?.close();
 
-    // Split into chunks of 200 IDs per filter to stay within relay limits
     const CHUNK = 200;
     const filters = [];
     for (let i = 0; i < ids.length; i += CHUNK) {
       filters.push({ kinds: [1], "#e": ids.slice(i, i + CHUNK) });
     }
 
-    const seen = new Set<string>();
     const sub = pool.subscribeMany(relays, filters, {
       onevent(event: Event) {
-        if (seen.has(event.id)) return;
-        seen.add(event.id);
+        if (seenReplies.current.has(event.id)) return;
+        seenReplies.current.add(event.id);
         const eTag = event.tags.filter((t) => t[0] === "e").at(-1)?.[1];
         if (!eTag) return;
         setReplyCounts((prev) => {
@@ -78,6 +79,7 @@ export default function PublicFeed() {
       onevent(event: Event) {
         if (event.tags.some((t) => t[0] === "e")) return; // skip replies
         count++;
+        allPostIds.current.add(event.id);
         setPosts((prev) => {
           if (prev.find((e) => e.id === event.id)) return prev;
           return [...prev, event].sort((a, b) => b.created_at - a.created_at);
@@ -86,14 +88,9 @@ export default function PublicFeed() {
       oneose() {
         if (count === 0) setHasMore(false);
         sub.close();
-        // Reopen reply count sub with all known IDs
-        const ids = postsRef.current.map((e) => e.id);
-        openReplyCountSub(ids);
-        if (until) {
-          setLoadingMore(false);
-        } else {
-          setLoadingPosts(false);
-        }
+        openReplyCountSub();
+        if (until) setLoadingMore(false);
+        else setLoadingPosts(false);
       },
     });
   }
@@ -105,6 +102,8 @@ export default function PublicFeed() {
     setReplyCounts(new Map());
     setHasMore(true);
     replySubRef.current?.close();
+    seenReplies.current = new Set();
+    allPostIds.current = new Set();
     loadBatch();
 
     return () => { replySubRef.current?.close(); };
