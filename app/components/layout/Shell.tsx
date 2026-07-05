@@ -76,7 +76,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             </div>
             <button
               onClick={logout}
-              className="bg-black text-white text-sm px-4 py-2 rounded font-[family-name:var(--font-inter)] hover:bg-[#2d2d2d] transition-colors"
+              className="bg-black text-white text-xs px-3 py-1.5 rounded font-[family-name:var(--font-inter)] hover:bg-[#2d2d2d] transition-colors"
             >
               Logout
             </button>
