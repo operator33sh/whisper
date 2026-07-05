@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
-import { useRelays } from "@/app/hooks/useRelays";
+import { useEvents } from "@/app/hooks/useEvents";
 import { timeAgo } from "@/app/lib/timeAgo";
 import UserMeta from "@/app/components/ui/UserMeta";
 import PostBody from "@/app/components/ui/PostBody";
@@ -37,27 +37,18 @@ function timestamp(event: Event): string {
 
 export default function ResonanceItem({ event }: Props) {
   const { pool } = useNostrContext();
-  const relays = useRelays((s) => s.relays);
-  const [parentEvent, setParentEvent] = useState<Event | null>(null);
+  const fetchEvents = useEvents((s) => s.fetchEvents);
+  const storedEvents = useEvents((s) => s.events);
 
   const parentId = getParentEventId(event);
   const rootId = getRootEventId(event);
 
   useEffect(() => {
     if (!parentId || parentId === event.id) return;
+    fetchEvents(pool, [parentId]);
+  }, [parentId, event.id, pool, fetchEvents]);
 
-    const sub = pool.subscribeMany(relays, [{ ids: [parentId], kinds: [1] }], {
-      onevent(e: Event) {
-        setParentEvent(e);
-        sub.close();
-      },
-      oneose() {
-        sub.close();
-      },
-    });
-
-    return () => sub.close();
-  }, [parentId, event.id, pool]);
+  const parentEvent = parentId && parentId !== event.id ? (storedEvents.get(parentId) ?? null) : null;
 
   const hasParent = parentEvent && parentEvent.id !== event.id;
 

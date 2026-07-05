@@ -88,6 +88,9 @@ export default function PostReplies({ eventId, count, replyCounts, rootEventId }
           return [event, ...prev].sort((a, b) => b.created_at - a.created_at);
         });
       },
+      oneose() {
+        sub.close();
+      },
     });
 
     return () => sub.close();

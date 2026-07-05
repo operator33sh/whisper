@@ -33,8 +33,11 @@ export function useReplyCounts(eventIds: string[]): { counts: Map<string, number
       chunks.push(debouncedIds.slice(i, i + CHUNK));
     }
 
-    const subs = chunks.map((chunk) =>
-      pool.subscribeMany(relays, [{ kinds: [1], "#e": chunk }], {
+    // All chunks as multiple filters in ONE subscribeMany (one REQ per relay)
+    const sub = pool.subscribeMany(
+      relays,
+      chunks.map((chunk) => ({ kinds: [1], "#e": chunk })),
+      {
         onevent(event: Event) {
           if (seenReplies.current.has(event.id)) return;
           seenReplies.current.add(event.id);
@@ -50,16 +53,13 @@ export function useReplyCounts(eventIds: string[]): { counts: Map<string, number
           });
         },
         oneose() {
-          eoseCount.current += 1;
-          if (eoseCount.current >= chunks.length) {
-            setLoading(false);
-            subs.forEach((sub) => sub.close());
-          }
+          setLoading(false);
+          sub.close();
         },
-      })
+      }
     );
 
-    return () => subs.forEach((sub) => sub.close());
+    return () => sub.close();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pool, relays.join(","), debouncedIds.join(",")]);
 

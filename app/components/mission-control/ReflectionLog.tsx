@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import type { Event } from "nostr-tools";
 import { useNostrFeed } from "@/app/hooks/useNostr";
 import { useNostrContext } from "@/app/components/NostrProvider";
-import { useRelays } from "@/app/hooks/useRelays";
+import { useEvents } from "@/app/hooks/useEvents";
 import PostBody from "@/app/components/ui/PostBody";
 import PostContent from "@/app/components/ui/PostContent";
 import UserMeta from "@/app/components/ui/UserMeta";
@@ -22,22 +22,14 @@ function getRootId(event: Event): string | null {
 
 function RootPreview({ rootId }: { rootId: string }) {
   const { pool } = useNostrContext();
-  const relays = useRelays((s) => s.relays);
-  const [root, setRoot] = useState<Event | null>(null);
+  const fetchEvents = useEvents((s) => s.fetchEvents);
+  const storedEvents = useEvents((s) => s.events);
 
   useEffect(() => {
-    const sub = pool.subscribeMany(relays, [{ ids: [rootId], kinds: [1], limit: 1 }], {
-      onevent(event: Event) {
-        setRoot(event);
-      },
-      oneose() {
-        sub.close();
-      },
-    });
-    return () => sub.close();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rootId, pool, relays.join(",")]);
+    fetchEvents(pool, [rootId]);
+  }, [rootId, pool, fetchEvents]);
 
+  const root = storedEvents.get(rootId) ?? null;
   if (!root) return null;
 
   return (
