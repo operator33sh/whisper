@@ -9,12 +9,15 @@ export interface Profile {
   display_name?: string;
   picture?: string;
   about?: string;
+  banner?: string;
+  website?: string;
 }
 
 interface ProfileStore {
   profiles: Map<string, Profile>;
   fetching: Set<string>;
   fetchProfiles: (pool: SimplePool, pubkeys: string[]) => void;
+  setProfile: (pubkey: string, profile: Profile) => void;
 }
 
 // Batch pubkeys arriving within 150ms into a single subscription
@@ -61,6 +64,14 @@ export const useProfiles = create<ProfileStore>((set, get) => {
   return {
     profiles: new Map(),
     fetching: new Set(),
+
+    setProfile: (pubkey: string, profile: Profile) => {
+      set((s) => {
+        const next = new Map(s.profiles);
+        next.set(pubkey, profile);
+        return { profiles: next };
+      });
+    },
 
     fetchProfiles: (pool: SimplePool, pubkeys: string[]) => {
       const { profiles, fetching } = get();

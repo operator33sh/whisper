@@ -8,6 +8,9 @@ import { useNostrContext } from "@/app/components/NostrProvider";
 import { useMissionControl } from "@/app/hooks/useMissionControl";
 import { useRelays } from "@/app/hooks/useRelays";
 import RelaySettings from "@/app/components/settings/RelaySettings";
+import Avatar from "@/app/components/ui/Avatar";
+import ProfileModal from "@/app/components/ui/ProfileModal";
+import { useProfiles } from "@/app/hooks/useProfiles";
 
 export default function Shell({ children }: { children: React.ReactNode }) {
   const { unlocked, logout } = useNsec();
@@ -16,6 +19,11 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const { activeView, setView, hasPendingMentions } = useMissionControl();
   const initRelays = useRelays((s) => s.initRelays);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profiles = useProfiles((s) => s.profiles);
+  const fetchProfiles = useProfiles((s) => s.fetchProfiles);
+  const myPubkey = unlocked ? getNsecPubkey() : null;
+  const myProfile = myPubkey ? profiles.get(myPubkey) : undefined;
 
   useEffect(() => {
     initRelays();
@@ -26,7 +34,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     const pubkey = getNsecPubkey();
     if (!pubkey) return;
     loadFollows(pool, pubkey);
-  }, [pool, loadFollows, unlocked]);
+    fetchProfiles(pool, [pubkey]);
+  }, [pool, loadFollows, fetchProfiles, unlocked]);
 
   return (
     <div className="h-screen flex">
@@ -60,10 +69,19 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         <button
           onClick={() => setSettingsOpen(true)}
           title="Settings"
-          className="mt-auto mb-8 p-2 text-base text-[#2d2d2d]/30 hover:text-[#2d2d2d] transition-colors select-none font-[family-name:var(--font-inter)]"
+          className="mt-auto p-2 text-base text-[#2d2d2d]/30 hover:text-[#2d2d2d] transition-colors select-none font-[family-name:var(--font-inter)]"
         >
           ⚙
         </button>
+        {myPubkey && (
+          <button
+            onClick={() => setProfileOpen(true)}
+            title="My profile"
+            className="mb-4 rounded-full opacity-70 hover:opacity-100 transition-opacity"
+          >
+            <Avatar pubkey={myPubkey} picture={myProfile?.picture} size={28} />
+          </button>
+        )}
       </aside>
 
       {/* Main content */}
@@ -86,6 +104,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       </div>
 
       {settingsOpen && <RelaySettings onClose={() => setSettingsOpen(false)} />}
+      {profileOpen && myPubkey && <ProfileModal pubkey={myPubkey} onClose={() => setProfileOpen(false)} isSelf />}
     </div>
   );
 }
