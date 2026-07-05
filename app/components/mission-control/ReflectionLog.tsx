@@ -70,11 +70,11 @@ export default function ReflectionLog({ pubkey }: Props) {
   }
 
   return (
-    <ul className="flex flex-col gap-10">
+    <ul className="flex flex-col divide-y divide-[#2d2d2d]/10">
       {events.map((event) => {
         const rootId = getRootId(event);
         return (
-          <li key={event.id} className="leading-relaxed">
+          <li key={event.id} className="leading-relaxed py-8 first:pt-0">
             {rootId ? (
               <>
                 <RootPreview rootId={rootId} />

@@ -79,9 +79,9 @@ export default function PublicFeed() {
             <div className="w-6 h-6 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
           </div>
         )}
-        <ul ref={feedRef} className="relative space-y-8 overflow-y-auto h-full pr-2">
+        <ul ref={feedRef} className="relative divide-y divide-[#2d2d2d]/10 overflow-y-auto h-full pr-2">
           {filtered.map((event: Event) => (
-            <li key={event.id} className="leading-relaxed bg-[#f9f9f7]">
+            <li key={event.id} className="leading-relaxed bg-[#f9f9f7] py-8 first:pt-0">
               <div className="flex items-center justify-between gap-4 mb-2">
                 <UserMeta pubkey={event.pubkey} />
                 <button
