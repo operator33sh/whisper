@@ -32,6 +32,8 @@ export default function PublicFeed() {
   const postsRef = useRef<Event[]>([]);
   // One reply sub per batch — stays open to receive ongoing replies
   const replySubsRef = useRef<Array<{ close: () => void }>>([]);
+  // Live sub for new posts + new replies published after initial load
+  const liveSubRef = useRef<{ close: () => void } | null>(null);
   const seenReplies = useRef<Set<string>>(new Set());
   const allPostIds = useRef<Set<string>>(new Set());
   const canLoadRef = useRef(false);
@@ -118,13 +120,44 @@ export default function PublicFeed() {
     setHasMore(true);
     replySubsRef.current.forEach((s) => s.close());
     replySubsRef.current = [];
+    liveSubRef.current?.close();
     seenReplies.current = new Set();
     allPostIds.current = new Set();
     loadBatch();
 
+    // Live sub: picks up new posts and new replies published after this point
+    const since = Math.floor(Date.now() / 1000);
+    liveSubRef.current = pool.subscribeMany(relays, [{ kinds: [1], since }], {
+      onevent(event: Event) {
+        if (event.tags.some((t) => t[0] === "e")) {
+          // It's a reply — update count for the parent post
+          if (seenReplies.current.has(event.id)) return;
+          seenReplies.current.add(event.id);
+          const eTag = event.tags.filter((t) => t[0] === "e").at(-1)?.[1];
+          if (!eTag) return;
+          console.log(`[PublicFeed] live reply for post ${eTag.slice(0, 8)}...`);
+          setReplyCounts((prev) => {
+            const next = new Map(prev);
+            next.set(eTag, (next.get(eTag) ?? 0) + 1);
+            return next;
+          });
+        } else {
+          // It's a new top-level post — add to the feed
+          if (allPostIds.current.has(event.id)) return;
+          allPostIds.current.add(event.id);
+          console.log(`[PublicFeed] live new post id=${event.id.slice(0, 8)}`);
+          setPosts((prev) => {
+            if (prev.find((e) => e.id === event.id)) return prev;
+            return [event, ...prev].sort((a, b) => b.created_at - a.created_at);
+          });
+        }
+      },
+    });
+
     return () => {
       replySubsRef.current.forEach((s) => s.close());
       replySubsRef.current = [];
+      liveSubRef.current?.close();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pool, relays.join(",")]);
