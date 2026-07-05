@@ -64,7 +64,7 @@ export default function ProfileModal({ pubkey, onClose }: Props) {
         </div>
 
         {profile?.about && (
-          <p className="text-sm text-[#2d2d2d]/70 leading-relaxed">{profile.about}</p>
+          <p className="text-sm text-[#2d2d2d]/70 leading-relaxed max-h-24 overflow-y-auto pr-1">{profile.about}</p>
         )}
 
         <div className="h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
