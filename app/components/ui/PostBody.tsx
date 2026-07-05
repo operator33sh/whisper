@@ -45,7 +45,7 @@ export default function PostBody({ content, timestamp, action }: Props) {
         <div className="flex justify-end">
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="mt-1 text-[#2d2d2d]/50 underline underline-offset-2 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)]"
+            className="mt-1 text-sm text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)]"
           >
             {expanded ? "Show less" : "Read more"}
           </button>
