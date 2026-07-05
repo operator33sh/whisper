@@ -80,6 +80,11 @@ export const useFollows = create<FollowStore>((set, get) => ({
       privateKey
     );
 
+    // Optimistic update before publish
+    const pubkeyOwn = getNsecPubkey();
+    if (pubkeyOwn) try { localStorage.setItem(FOLLOWS_CACHE_PREFIX + pubkeyOwn, JSON.stringify(updatedFollows)); } catch {}
+    set({ follows: updatedFollows });
+
     console.log("[follow] publishing kind:3 event", event);
 
     try {
@@ -89,10 +94,6 @@ export const useFollows = create<FollowStore>((set, get) => ({
       console.error("[follow] relay rejected or timed out:", e);
       throw e;
     }
-
-    const pubkeyOwn = getNsecPubkey();
-    if (pubkeyOwn) try { localStorage.setItem(FOLLOWS_CACHE_PREFIX + pubkeyOwn, JSON.stringify(updatedFollows)); } catch {}
-    set({ follows: updatedFollows });
   },
 
   unfollow: async (pool: SimplePool, pubkey: string) => {
@@ -120,6 +121,11 @@ export const useFollows = create<FollowStore>((set, get) => ({
       privateKey
     );
 
+    // Optimistic update before publish
+    const pubkeyOwn = getNsecPubkey();
+    if (pubkeyOwn) try { localStorage.setItem(FOLLOWS_CACHE_PREFIX + pubkeyOwn, JSON.stringify(updatedFollows)); } catch {}
+    set({ follows: updatedFollows });
+
     console.log("[unfollow] publishing kind:3 event", event);
 
     try {
@@ -129,10 +135,6 @@ export const useFollows = create<FollowStore>((set, get) => ({
       console.error("[unfollow] relay rejected or timed out:", e);
       throw e;
     }
-
-    const pubkeyOwn = getNsecPubkey();
-    if (pubkeyOwn) try { localStorage.setItem(FOLLOWS_CACHE_PREFIX + pubkeyOwn, JSON.stringify(updatedFollows)); } catch {}
-    set({ follows: updatedFollows });
   },
 }));
 

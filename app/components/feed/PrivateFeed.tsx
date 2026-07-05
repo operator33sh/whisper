@@ -27,7 +27,6 @@ export default function PrivateFeed() {
   const [hasMore, setHasMore] = useState(true);
   const feedRef = useRef<HTMLUListElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const subscribedAuthors = useRef<Set<string>>(new Set());
   const activeRelaysKey = useRef<string>("");
   const eventsRef = useRef<Event[]>([]);
   const loadMoreRef = useRef<() => void>(() => {});
@@ -54,18 +53,13 @@ export default function PrivateFeed() {
     // Full reset only when relay list changes
     if (relaysChanged) {
       activeRelaysKey.current = relays.join(",");
-      subscribedAuthors.current = new Set();
       setEvents([]);
       setLoading(true);
       setHasMore(true);
     }
 
-    // Only fetch authors not yet subscribed to
-    const newAuthors = follows.filter((pk) => !subscribedAuthors.current.has(pk));
-    if (newAuthors.length === 0) { setLoading(false); return; }
-    newAuthors.forEach((pk) => subscribedAuthors.current.add(pk));
-
-    const sub = pool.subscribeMany(relays, [{ kinds: [1], authors: newAuthors, limit: 100 }], {
+    // Re-subscribe to full author set on every follows change
+    const sub = pool.subscribeMany(relays, [{ kinds: [1], authors: follows, limit: 100 }], {
       onevent(event: Event) {
         setEvents((prev) => {
           if (prev.find((e) => e.id === event.id)) return prev;
