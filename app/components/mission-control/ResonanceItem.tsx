@@ -62,7 +62,7 @@ export default function ResonanceItem({ event }: Props) {
   const hasParent = parentEvent && parentEvent.id !== event.id;
 
   return (
-    <li className="flex flex-col gap-3 leading-relaxed">
+    <li className="flex flex-col gap-3 leading-relaxed pt-8 first:pt-0">
       {/* Parent: the message directly replied to */}
       {hasParent && (
         <div>
@@ -87,6 +87,7 @@ export default function ResonanceItem({ event }: Props) {
           action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} rootEventId={rootId ?? undefined} />}
         />
       </div>
+      <div className="mt-6 h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
     </li>
   );
 }

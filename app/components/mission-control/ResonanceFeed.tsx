@@ -61,7 +61,7 @@ export default function ResonanceFeed({ pubkey }: Props) {
   }
 
   return (
-    <ul className="flex flex-col gap-10">
+    <ul className="flex flex-col">
       {events.map((event) => (
         <ResonanceItem key={event.id} event={event} />
       ))}
