@@ -70,11 +70,11 @@ export default function ReflectionLog({ pubkey }: Props) {
   }
 
   return (
-    <ul className="flex flex-col divide-y divide-[#2d2d2d]/10">
+    <ul className="flex flex-col">
       {events.map((event) => {
         const rootId = getRootId(event);
         return (
-          <li key={event.id} className="leading-relaxed py-8 first:pt-0">
+          <li key={event.id} className="leading-relaxed pt-8 first:pt-0">
             {rootId ? (
               <>
                 <RootPreview rootId={rootId} />
@@ -92,6 +92,7 @@ export default function ReflectionLog({ pubkey }: Props) {
                 timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
               />
             )}
+            <div className="mt-8 h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
           </li>
         );
       })}
