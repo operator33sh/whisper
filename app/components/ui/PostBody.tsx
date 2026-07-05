@@ -31,28 +31,40 @@ export default function PostBody({ content, timestamp, action }: Props) {
     }
   }, [content]);
 
+  const canTruncate = !hasImage && !hasVideo && !hasYouTube && !hasEmbed;
+
   return (
     <div>
-      <div
-        ref={ref}
-        className={!hasImage && !hasVideo && !hasYouTube && !hasEmbed && !expanded ? "line-clamp-8" : undefined}
-      >
-        <PostContent content={content} />
+      <div className="relative">
+        <div
+          ref={ref}
+          className={canTruncate && !expanded ? "line-clamp-8" : undefined}
+        >
+          <PostContent content={content} />
+        </div>
+        {truncated && canTruncate && !expanded && (
+          <button
+            onClick={() => setExpanded(true)}
+            className="absolute bottom-0 right-0 bg-gradient-to-l from-[#f9f9f7] from-60% pl-6 text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors"
+          >
+            Read more
+          </button>
+        )}
       </div>
       <div className="flex items-center justify-between mt-2">
         <span className="text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">
           {timestamp}
         </span>
         <div className="flex items-center gap-3">
-          {action}
-          {truncated && !hasImage && !hasVideo && !hasYouTube && (
+          {truncated && canTruncate && expanded && (
             <button
-              onClick={() => setExpanded((v) => !v)}
-              className="text-sm text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)]"
+              onClick={() => setExpanded(false)}
+              className="text-sm text-[#2d2d2d]/40 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)]"
             >
-              {expanded ? "Show less" : "Read more"}
+              Show less
             </button>
           )}
+          {action}
         </div>
       </div>
     </div>
