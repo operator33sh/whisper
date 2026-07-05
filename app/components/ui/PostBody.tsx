@@ -42,12 +42,14 @@ export default function PostBody({ content, timestamp, action }: Props) {
         <PostContent content={content} />
       </div>
       {truncated && canTruncate && (
-        <button
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-1 text-[#2d2d2d]/50 underline underline-offset-2 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)]"
-        >
-          {expanded ? "Show less" : "Read more"}
-        </button>
+        <div className="flex justify-end">
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="mt-1 text-[#2d2d2d]/50 underline underline-offset-2 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)]"
+          >
+            {expanded ? "Show less" : "Read more"}
+          </button>
+        </div>
       )}
       <div className="flex items-center justify-between mt-2">
         <span className="text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">
