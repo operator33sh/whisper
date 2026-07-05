@@ -21,6 +21,13 @@ export default function PublicFeed() {
   const [pending, setPending] = useState<string | null>(null);
   const feedRef = useRef<HTMLUListElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef(loadMore);
+  const canLoadRef = useRef(false);
+
+  useEffect(() => { loadMoreRef.current = loadMore; }, [loadMore]);
+  useEffect(() => {
+    canLoadRef.current = !loadingMore && hasMore && !loading;
+  }, [loadingMore, hasMore, loading]);
 
   useEffect(() => {
     function handleWheel(e: WheelEvent) {
@@ -34,20 +41,30 @@ export default function PublicFeed() {
     return () => window.removeEventListener("wheel", handleWheel);
   }, []);
 
+  // Scroll-triggered: stable observer, never recreated
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !loadingMore && hasMore && !loading && !reactionsLoading) {
-          loadMore();
+        if (entry.isIntersecting && canLoadRef.current) {
+          loadMoreRef.current();
         }
       },
       { threshold: 0.1 }
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [loadMore, loadingMore, hasMore, loading, reactionsLoading]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-fill: keep loading while filtered list doesn't fill the scroll container
+  useEffect(() => {
+    if (loading || loadingMore || !hasMore) return;
+    const ul = feedRef.current;
+    if (!ul || ul.scrollHeight > ul.clientHeight) return;
+    loadMore();
+  }, [loading, loadingMore, hasMore, loadMore]);
 
   async function handleFollow(pubkey: string) {
     setPending(pubkey);
