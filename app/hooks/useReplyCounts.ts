@@ -12,7 +12,6 @@ export function useReplyCounts(eventIds: string[]): { counts: Map<string, number
   const [loading, setLoading] = useState(true);
   const [debouncedIds, setDebouncedIds] = useState<string[]>([]);
   const seenReplies = useRef<Set<string>>(new Set());
-  const eoseCount = useRef(0);
 
   // Debounce: wacht tot de lijst stabiliseert voor een nieuwe subscription
   useEffect(() => {
@@ -25,28 +24,33 @@ export function useReplyCounts(eventIds: string[]): { counts: Map<string, number
     if (debouncedIds.length === 0) return;
 
     setLoading(true);
-    eoseCount.current = 0;
 
     const CHUNK = 50;
-    const MAX_IDS = 200; // cap to stay within relay filter array limits
+    const MAX_IDS = 200;
     const limited = debouncedIds.slice(0, MAX_IDS);
     const chunks: string[][] = [];
     for (let i = 0; i < limited.length; i += CHUNK) {
       chunks.push(limited.slice(i, i + CHUNK));
     }
 
-    // All chunks as multiple filters in ONE subscribeMany (one REQ per relay)
-    const sub = pool.subscribeMany(
-      relays,
-      chunks.map((chunk) => ({ kinds: [1], "#e": chunk })),
-      {
+    // Process chunks sequentially: one REQ open at a time
+    let cancelled = false;
+    let currentSub: { close: () => void } | null = null;
+    let chunkIdx = 0;
+
+    function fetchNext() {
+      if (cancelled || chunkIdx >= chunks.length) {
+        if (!cancelled) setLoading(false);
+        return;
+      }
+      const chunk = chunks[chunkIdx++];
+      currentSub = pool.subscribeMany(relays, [{ kinds: [1], "#e": chunk }], {
         onevent(event: Event) {
+          if (cancelled) return;
           if (seenReplies.current.has(event.id)) return;
           seenReplies.current.add(event.id);
-
           const eTags = event.tags.filter((t) => t[0] === "e");
           if (eTags.length === 0) return;
-
           const targetId = eTags.at(-1)![1];
           setCounts((prev) => {
             const next = new Map(prev);
@@ -55,12 +59,18 @@ export function useReplyCounts(eventIds: string[]): { counts: Map<string, number
           });
         },
         oneose() {
-          setLoading(false);
+          currentSub?.close();
+          fetchNext();
         },
-      }
-    );
+      });
+    }
 
-    return () => sub.close();
+    fetchNext();
+
+    return () => {
+      cancelled = true;
+      currentSub?.close();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pool, relays.join(","), debouncedIds.join(",")]);
 
