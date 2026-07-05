@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { useNostrFeed } from "@/app/hooks/useNostr";
+import { useNostrContext } from "@/app/components/NostrProvider";
+import { useRelays } from "@/app/hooks/useRelays";
 import { useMissionControl } from "@/app/hooks/useMissionControl";
 import ResonanceItem from "./ResonanceItem";
 import type { Filter } from "nostr-tools";
@@ -13,36 +15,38 @@ interface Props {
 export default function ResonanceFeed({ pubkey }: Props) {
   const filter: Filter = { kinds: [1], "#p": [pubkey], limit: 50 };
   const { events, loading } = useNostrFeed(filter);
+  const { pool } = useNostrContext();
+  const relays = useRelays((s) => s.relays);
   const activeView = useMissionControl((s) => s.activeView);
   const setHasPendingMentions = useMissionControl((s) => s.setHasPendingMentions);
-
-  // Baseline: count at the moment initial load completes
-  const baselineRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (!loading && baselineRef.current === null) {
-      baselineRef.current = events.length;
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
-
-  // Detect new arrivals after baseline
-  useEffect(() => {
-    if (baselineRef.current === null) return;
-    if (events.length > baselineRef.current && activeView === "feed") {
-      setHasPendingMentions(true);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [events.length]);
+  const activeViewRef = useRef(activeView);
+  useEffect(() => { activeViewRef.current = activeView; });
 
   // Reset signal when user opens Mission Control
   useEffect(() => {
     if (activeView === "mission-control") {
       setHasPendingMentions(false);
-      baselineRef.current = events.length;
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeView]);
+
+  // Dedicated live subscription for new mention detection (since: now, no limit)
+  useEffect(() => {
+    const since = Math.floor(Date.now() / 1000);
+    const sub = pool.subscribeMany(
+      relays,
+      [{ kinds: [1], "#p": [pubkey], since }],
+      {
+        onevent() {
+          if (activeViewRef.current === "feed") {
+            setHasPendingMentions(true);
+          }
+        },
+      }
+    );
+    return () => sub.close();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pool, pubkey, relays.join(",")]);
 
   if (loading && events.length === 0) {
     return (
