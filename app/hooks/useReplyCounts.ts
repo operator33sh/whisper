@@ -28,9 +28,11 @@ export function useReplyCounts(eventIds: string[]): { counts: Map<string, number
     eoseCount.current = 0;
 
     const CHUNK = 50;
+    const MAX_IDS = 200; // cap to stay within relay filter array limits
+    const limited = debouncedIds.slice(0, MAX_IDS);
     const chunks: string[][] = [];
-    for (let i = 0; i < debouncedIds.length; i += CHUNK) {
-      chunks.push(debouncedIds.slice(i, i + CHUNK));
+    for (let i = 0; i < limited.length; i += CHUNK) {
+      chunks.push(limited.slice(i, i + CHUNK));
     }
 
     // All chunks as multiple filters in ONE subscribeMany (one REQ per relay)
