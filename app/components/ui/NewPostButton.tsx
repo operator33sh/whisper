@@ -29,6 +29,27 @@ export default function NewPostButton() {
     if (!file) return;
     e.target.value = "";
 
+    const nsec = localStorage.getItem(STORAGE_KEY);
+    if (!nsec) { setUploadError("Not logged in."); return; }
+    const { type, data: privateKey } = decode(nsec);
+    if (type !== "nsec") { setUploadError("Invalid nsec."); return; }
+
+    const uploadUrl = "https://nostr.build/api/v2/upload/files";
+
+    const authEvent = finalizeEvent(
+      {
+        kind: 27235,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [
+          ["u", uploadUrl],
+          ["method", "POST"],
+        ],
+        content: "",
+      },
+      privateKey as Uint8Array
+    );
+    const authHeader = "Nostr " + btoa(JSON.stringify(authEvent));
+
     setUploadError(null);
     setUploadProgress(0);
 
@@ -54,7 +75,14 @@ export default function NewPostButton() {
           setUploadError("Upload succeeded but no URL was returned.");
         }
       } else {
-        setUploadError("Upload failed. Please try again.");
+        console.error("[upload] status:", xhr.status, "response:", xhr.responseText);
+        try {
+          const json = JSON.parse(xhr.responseText);
+          const msg = json?.message || json?.error || "Upload failed. Please try again.";
+          setUploadError(msg);
+        } catch {
+          setUploadError("Upload failed. Please try again.");
+        }
       }
     };
 
@@ -63,7 +91,8 @@ export default function NewPostButton() {
       setUploadError("Upload failed. Please try again.");
     };
 
-    xhr.open("POST", "https://nostr.build/api/v2/upload/files");
+    xhr.open("POST", uploadUrl);
+    xhr.setRequestHeader("Authorization", authHeader);
     xhr.send(formData);
   }
 
