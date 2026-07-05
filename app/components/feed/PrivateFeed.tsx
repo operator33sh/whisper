@@ -29,6 +29,9 @@ export default function PrivateFeed() {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const subscribedAuthors = useRef<Set<string>>(new Set());
   const activeRelaysKey = useRef<string>("");
+  const eventsRef = useRef<Event[]>([]);
+  const loadMoreRef = useRef<() => void>(() => {});
+  const canLoadRef = useRef(false);
 
   useEffect(() => {
     function handleWheel(e: WheelEvent) {
@@ -78,52 +81,65 @@ export default function PrivateFeed() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [follows.join(","), loadingFollows, pool, relays.join(",")]);
 
+  useEffect(() => { eventsRef.current = events; }, [events]);
+  useEffect(() => {
+    canLoadRef.current = !loadingMore && hasMore && !loading && !loadingFollows;
+  }, [loadingMore, hasMore, loading, loadingFollows]);
+
   const loadMore = useCallback(() => {
-    setEvents((current) => {
-      const oldest = current.at(-1);
-      if (!oldest) return current;
+    const oldest = eventsRef.current.at(-1);
+    if (!oldest) return;
 
-      setLoadingMore(true);
-      let batchCount = 0;
+    setLoadingMore(true);
+    let batchCount = 0;
 
-      const sub = pool.subscribeMany(
-        relays,
-        [{ kinds: [1], authors: follows, until: oldest.created_at - 1, limit: 100 }],
-        {
-          onevent(event: Event) {
-            batchCount++;
-            setEvents((prev) => {
-              if (prev.find((e) => e.id === event.id)) return prev;
-              return [...prev, event].sort((a, b) => b.created_at - a.created_at);
-            });
-          },
-          oneose() {
-            if (batchCount === 0) setHasMore(false);
-            setLoadingMore(false);
-            sub.close();
-          },
-        }
-      );
-
-      return current;
-    });
+    const sub = pool.subscribeMany(
+      relays,
+      [{ kinds: [1], authors: follows, until: oldest.created_at - 1, limit: 100 }],
+      {
+        onevent(event: Event) {
+          batchCount++;
+          setEvents((prev) => {
+            if (prev.find((e) => e.id === event.id)) return prev;
+            return [...prev, event].sort((a, b) => b.created_at - a.created_at);
+          });
+        },
+        oneose() {
+          if (batchCount === 0) setHasMore(false);
+          setLoadingMore(false);
+          sub.close();
+        },
+      }
+    );
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pool, follows.join(","), relays.join(",")]);
 
+  useEffect(() => { loadMoreRef.current = loadMore; }, [loadMore]);
+
+  // Stabiele observer — nooit herschapen
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !loadingMore && hasMore && !loading && !loadingFollows) {
-          loadMore();
+        if (entry.isIntersecting && canLoadRef.current) {
+          loadMoreRef.current();
         }
       },
       { threshold: 0.1 }
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [loadMore, loadingMore, hasMore, loading, loadingFollows]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-fill: laad meer als de lijst het scherm niet vult
+  useEffect(() => {
+    if (loading || loadingMore || !hasMore || loadingFollows) return;
+    const ul = feedRef.current;
+    if (!ul || ul.scrollHeight > ul.clientHeight) return;
+    loadMore();
+  }, [loading, loadingMore, hasMore, loadingFollows, loadMore]);
 
   async function handleUnfollow(pubkey: string) {
     setPending(pubkey);
