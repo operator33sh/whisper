@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useFollows } from "@/app/hooks/useFollows";
+import { useFollows, getNsecPubkey } from "@/app/hooks/useFollows";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useReplyCounts } from "@/app/hooks/useReplyCounts";
 import { timeAgo } from "@/app/lib/timeAgo";
@@ -19,6 +19,7 @@ export default function PrivateFeed() {
   const unfollow = useFollows((s) => s.unfollow);
   const relays = useRelays((s) => s.relays);
   const [pending, setPending] = useState<string | null>(null);
+  const myPubkey = getNsecPubkey();
 
   const [events, setEvents] = useState<Event[]>([]);
   const { counts: replyCounts } = useReplyCounts(events.map((e) => e.id));
@@ -166,13 +167,15 @@ export default function PrivateFeed() {
             <li key={event.id} className="leading-relaxed bg-[#f9f9f7] pt-8 first:pt-0">
               <div className="flex items-center justify-between gap-4 mb-2">
                 <UserMeta pubkey={event.pubkey} />
-                <button
-                  onClick={() => handleUnfollow(event.pubkey)}
-                  disabled={pending === event.pubkey}
-                  className="shrink-0 bg-white text-[#2d2d2d] border border-[#2d2d2d] text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] hover:bg-[#f0f0ee] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {pending === event.pubkey ? "Unfollowing…" : "Unfollow"}
-                </button>
+                {event.pubkey !== myPubkey && (
+                  <button
+                    onClick={() => handleUnfollow(event.pubkey)}
+                    disabled={pending === event.pubkey}
+                    className="shrink-0 bg-white text-[#2d2d2d] border border-[#2d2d2d] text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] hover:bg-[#f0f0ee] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {pending === event.pubkey ? "Unfollowing…" : "Unfollow"}
+                  </button>
+                )}
               </div>
               <PostBody
                 content={event.content}

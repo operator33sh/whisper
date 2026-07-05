@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useFollows } from "@/app/hooks/useFollows";
+import { useFollows, getNsecPubkey } from "@/app/hooks/useFollows";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useRelays } from "@/app/hooks/useRelays";
 import PostBody from "@/app/components/ui/PostBody";
@@ -19,6 +19,7 @@ export default function PublicFeed() {
   const follows = useFollows((s) => s.follows);
   const follow = useFollows((s) => s.follow);
   const [pending, setPending] = useState<string | null>(null);
+  const myPubkey = getNsecPubkey();
 
   const [posts, setPosts] = useState<Event[]>([]);
   const [replyCounts, setReplyCounts] = useState<Map<string, number>>(new Map());
@@ -161,7 +162,7 @@ export default function PublicFeed() {
   }
 
   const filtered = posts.filter(
-    (e) => !follows.includes(e.pubkey) && (replyCounts.get(e.id) ?? 0) > 0
+    (e) => e.pubkey !== myPubkey && !follows.includes(e.pubkey) && (replyCounts.get(e.id) ?? 0) > 0
   );
 
   return (
@@ -181,13 +182,15 @@ export default function PublicFeed() {
             <li key={event.id} className="leading-relaxed bg-[#f9f9f7] pt-8 first:pt-0">
               <div className="flex items-center justify-between gap-4 mb-2">
                 <UserMeta pubkey={event.pubkey} />
-                <button
-                  onClick={() => handleFollow(event.pubkey)}
-                  disabled={pending === event.pubkey}
-                  className="shrink-0 bg-black text-white text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] hover:bg-[#2d2d2d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {pending === event.pubkey ? "Following…" : "Follow"}
-                </button>
+                {event.pubkey !== myPubkey && (
+                  <button
+                    onClick={() => handleFollow(event.pubkey)}
+                    disabled={pending === event.pubkey}
+                    className="shrink-0 bg-black text-white text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] hover:bg-[#2d2d2d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {pending === event.pubkey ? "Following…" : "Follow"}
+                  </button>
+                )}
               </div>
               <PostBody
                 content={event.content}
