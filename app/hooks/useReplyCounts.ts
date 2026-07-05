@@ -56,7 +56,6 @@ export function useReplyCounts(eventIds: string[]): { counts: Map<string, number
         },
         oneose() {
           setLoading(false);
-          sub.close();
         },
       }
     );
