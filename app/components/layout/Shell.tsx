@@ -36,7 +36,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           onClick={() => setView("feed")}
           title="Whisper"
           style={{ fontFamily: "var(--font-crimson)" }}
-          className={`text-lg transition-opacity select-none ${
+          className={`text-lg transition-opacity select-none p-2 ${
             activeView === "feed" ? "opacity-100" : "opacity-25 hover:opacity-60"
           }`}
         >
@@ -46,7 +46,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           onClick={() => setView("mission-control")}
           title="Mission Control"
           style={{ writingMode: "vertical-rl", letterSpacing: "0.12em" }}
-          className={`text-[10px] uppercase font-[family-name:var(--font-inter)] select-none ${
+          className={`text-[10px] uppercase font-[family-name:var(--font-inter)] select-none p-2 ${
             activeView === "mission-control"
               ? "opacity-100"
               : hasPendingMentions
@@ -60,7 +60,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         <button
           onClick={() => setSettingsOpen(true)}
           title="Settings"
-          className="mt-auto mb-8 text-base text-[#2d2d2d]/30 hover:text-[#2d2d2d] transition-colors select-none font-[family-name:var(--font-inter)]"
+          className="mt-auto mb-8 p-2 text-base text-[#2d2d2d]/30 hover:text-[#2d2d2d] transition-colors select-none font-[family-name:var(--font-inter)]"
         >
           ⚙
         </button>
