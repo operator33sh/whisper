@@ -30,7 +30,8 @@ export default function PublicFeed() {
   const feedRef = useRef<HTMLUListElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const postsRef = useRef<Event[]>([]);
-  const replySubRef = useRef<{ close: () => void } | null>(null);
+  // One reply sub per batch — stays open to receive ongoing replies
+  const replySubsRef = useRef<Array<{ close: () => void }>>([]);
   const seenReplies = useRef<Set<string>>(new Set());
   const allPostIds = useRef<Set<string>>(new Set());
   const canLoadRef = useRef(false);
@@ -41,34 +42,30 @@ export default function PublicFeed() {
     canLoadRef.current = !loadingMore && hasMore && !loadingPosts;
   }, [loadingMore, hasMore, loadingPosts]);
 
-  // Reopen reply-count sub with all accumulated post IDs
-  function openReplyCountSub() {
-    const ids = Array.from(allPostIds.current);
-    console.log(`[PublicFeed] openReplyCountSub tracking ${ids.length} post IDs`);
-    if (ids.length === 0) return;
-    replySubRef.current?.close();
+  // Open a reply-count sub for only the new IDs from this batch (delta)
+  function openDeltaReplyCountSub(newIds: string[]) {
+    if (newIds.length === 0) return;
+    console.log(`[PublicFeed] openDeltaReplyCountSub for ${newIds.length} new IDs`);
 
     const CHUNK = 200;
-    const filters = [];
-    for (let i = 0; i < ids.length; i += CHUNK) {
-      filters.push({ kinds: [1], "#e": ids.slice(i, i + CHUNK) });
+    for (let i = 0; i < newIds.length; i += CHUNK) {
+      const chunk = newIds.slice(i, i + CHUNK);
+      const sub = pool.subscribeMany(relays, [{ kinds: [1], "#e": chunk }], {
+        onevent(event: Event) {
+          if (seenReplies.current.has(event.id)) return;
+          seenReplies.current.add(event.id);
+          const eTag = event.tags.filter((t) => t[0] === "e").at(-1)?.[1];
+          if (!eTag) return;
+          console.log(`[PublicFeed] reply counted for post ${eTag.slice(0, 8)}...`);
+          setReplyCounts((prev) => {
+            const next = new Map(prev);
+            next.set(eTag, (next.get(eTag) ?? 0) + 1);
+            return next;
+          });
+        },
+      });
+      replySubsRef.current.push(sub);
     }
-
-    const sub = pool.subscribeMany(relays, filters, {
-      onevent(event: Event) {
-        if (seenReplies.current.has(event.id)) return;
-        seenReplies.current.add(event.id);
-        const eTag = event.tags.filter((t) => t[0] === "e").at(-1)?.[1];
-        if (!eTag) return;
-        console.log(`[PublicFeed] reply counted for post ${eTag.slice(0, 8)}...`);
-        setReplyCounts((prev) => {
-          const next = new Map(prev);
-          next.set(eTag, (next.get(eTag) ?? 0) + 1);
-          return next;
-        });
-      },
-    });
-    replySubRef.current = sub;
   }
 
   // Load a batch of posts (oldest.created_at - 1 as until for pagination)
@@ -80,7 +77,9 @@ export default function PublicFeed() {
 
     let totalFromRelay = 0;
     let replies = 0;
-    let posts = 0;
+    let postCount = 0;
+    const newIdsThisBatch: string[] = [];
+
     const sub = pool.subscribeMany(relays, [filter as Parameters<typeof pool.subscribeMany>[1][0]], {
       onevent(event: Event) {
         totalFromRelay++;
@@ -88,19 +87,22 @@ export default function PublicFeed() {
           replies++;
           return; // skip replies
         }
-        posts++;
+        postCount++;
         console.log(`[PublicFeed] post received id=${event.id.slice(0, 8)} at=${event.created_at}`);
-        allPostIds.current.add(event.id);
+        if (!allPostIds.current.has(event.id)) {
+          allPostIds.current.add(event.id);
+          newIdsThisBatch.push(event.id);
+        }
         setPosts((prev) => {
           if (prev.find((e) => e.id === event.id)) return prev;
           return [...prev, event].sort((a, b) => b.created_at - a.created_at);
         });
       },
       oneose() {
-        console.log(`[PublicFeed] loadBatch EOSE — total=${totalFromRelay} posts=${posts} replies=${replies} hasMore=${totalFromRelay > 0}`);
+        console.log(`[PublicFeed] loadBatch EOSE — total=${totalFromRelay} posts=${postCount} replies=${replies} newIds=${newIdsThisBatch.length}`);
         if (totalFromRelay === 0) setHasMore(false);
         sub.close();
-        openReplyCountSub();
+        openDeltaReplyCountSub(newIdsThisBatch);
         if (until) setLoadingMore(false);
         else setLoadingPosts(false);
       },
@@ -114,12 +116,16 @@ export default function PublicFeed() {
     setPosts([]);
     setReplyCounts(new Map());
     setHasMore(true);
-    replySubRef.current?.close();
+    replySubsRef.current.forEach((s) => s.close());
+    replySubsRef.current = [];
     seenReplies.current = new Set();
     allPostIds.current = new Set();
     loadBatch();
 
-    return () => { replySubRef.current?.close(); };
+    return () => {
+      replySubsRef.current.forEach((s) => s.close());
+      replySubsRef.current = [];
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pool, relays.join(",")]);
 
