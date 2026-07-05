@@ -51,16 +51,16 @@ export default function NewPostButton() {
           if (!url) throw new Error("No URL in response");
           setText((prev) => (prev ? `${prev}\n${url}` : url));
         } catch {
-          setUploadError("Upload geslaagd maar URL niet gevonden.");
+          setUploadError("Upload succeeded but no URL was returned.");
         }
       } else {
-        setUploadError("Upload mislukt. Probeer opnieuw.");
+        setUploadError("Upload failed. Please try again.");
       }
     };
 
     xhr.onerror = () => {
       setUploadProgress(null);
-      setUploadError("Upload mislukt. Probeer opnieuw.");
+      setUploadError("Upload failed. Please try again.");
     };
 
     xhr.open("POST", "https://nostr.build/api/v2/upload/files");
@@ -130,7 +130,7 @@ export default function NewPostButton() {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadProgress !== null}
                 className="absolute bottom-2 right-2 text-[#2d2d2d]/40 hover:text-[#2d2d2d] transition-colors disabled:opacity-30"
-                aria-label="Bestand bijvoegen"
+                aria-label="Attach file"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
