@@ -39,7 +39,7 @@ export default function PublicFeed() {
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !loadingMore && hasMore && !loading) {
+        if (entry.isIntersecting && !loadingMore && hasMore && !loading && !reactionsLoading) {
           loadMore();
         }
       },
@@ -47,7 +47,7 @@ export default function PublicFeed() {
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [loadMore, loadingMore, hasMore, loading]);
+  }, [loadMore, loadingMore, hasMore, loading, reactionsLoading]);
 
   async function handleFollow(pubkey: string) {
     setPending(pubkey);
