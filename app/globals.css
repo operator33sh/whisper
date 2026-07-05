@@ -34,7 +34,7 @@ button, input, label, nav {
   }
   50% {
     opacity: 0.9;
-    text-shadow: 0 0 8px rgba(200, 160, 90, 0.65), 0 0 20px rgba(200, 160, 90, 0.25);
+    text-shadow: 0 0 8px rgba(100, 180, 255, 0.8), 0 0 20px rgba(100, 180, 255, 0.35);
   }
 }
 
