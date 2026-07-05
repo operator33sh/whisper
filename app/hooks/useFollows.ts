@@ -139,6 +139,7 @@ export const useFollows = create<FollowStore>((set, get) => ({
 }));
 
 export function getNsecPubkey(): string | null {
+  if (typeof window === "undefined") return null;
   const nsec = localStorage.getItem(STORAGE_KEY);
   if (!nsec) return null;
   try {
