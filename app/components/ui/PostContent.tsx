@@ -23,7 +23,7 @@ function ImageModal({ src, onClose }: { src: string; onClose: () => void }) {
 const MEDIA_REGEX = /(https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|avif|mp4|webm|mov|ogg)(?:\?\S*)?)/gi;
 const VIDEO_REGEX = /\.(?:mp4|webm|mov|ogg)(?:\?|$)/i;
 const URL_REGEX = /(https?:\/\/[^\s]+)/g;
-const NPROFILE_REGEX = /(nostr:n(?:profile|pub)1[a-z0-9]+)/g;
+const NPROFILE_REGEX = /(nostr:n(?:profile|pub)1[a-z0-9]+|npub1[a-z0-9]+)/g;
 const NEVENT_REGEX = /(nostr:(?:nevent|note)1[a-z0-9]+)/g;
 const YOUTUBE_REGEX = /(https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)[\w-]+(?:[?&][\w=&%-]*)?)/gi;
 
