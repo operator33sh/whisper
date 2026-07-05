@@ -41,3 +41,21 @@ button, input, label, nav {
 .animate-sacred-glow {
   animation: sacred-glow 3.5s ease-in-out infinite;
 }
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c0c0bc #ebebe8;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #ebebe8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c0c0bc;
+  border-radius: 3px;
+}
