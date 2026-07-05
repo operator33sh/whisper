@@ -5,6 +5,7 @@ import { useNostrContext } from "@/app/components/NostrProvider";
 import { useProfiles } from "@/app/hooks/useProfiles";
 import { useFollows } from "@/app/hooks/useFollows";
 import Avatar from "@/app/components/ui/Avatar";
+import ProfileFeed from "@/app/components/ui/ProfileFeed";
 import { npubEncode } from "nostr-tools/nip19";
 
 interface Props {
@@ -48,7 +49,7 @@ export default function ProfileModal({ pubkey, onClose }: Props) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
       <div
-        className="bg-[#f9f9f7] rounded-lg p-8 w-full max-w-md flex flex-col gap-4"
+        className="bg-[#f9f9f7] rounded-lg p-8 w-full max-w-lg flex flex-col gap-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-4">
@@ -64,6 +65,9 @@ export default function ProfileModal({ pubkey, onClose }: Props) {
         {profile?.about && (
           <p className="text-sm text-[#2d2d2d]/70 leading-relaxed">{profile.about}</p>
         )}
+
+        <div className="h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
+        <ProfileFeed pubkey={pubkey} />
 
         <div className="flex justify-end gap-3 pt-2">
           <button
