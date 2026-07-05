@@ -35,35 +35,25 @@ export default function PostBody({ content, timestamp, action }: Props) {
 
   return (
     <div>
-      <div className="relative">
-        <div
-          ref={ref}
-          className={canTruncate && !expanded ? "line-clamp-8" : undefined}
-        >
-          <PostContent content={content} />
-        </div>
-        {truncated && canTruncate && !expanded && (
-          <button
-            onClick={() => setExpanded(true)}
-            className="absolute bottom-0 right-0 bg-gradient-to-l from-[#f9f9f7] from-60% pl-6 text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors"
-          >
-            Read more
-          </button>
-        )}
+      <div
+        ref={ref}
+        className={canTruncate && !expanded ? "line-clamp-8" : undefined}
+      >
+        <PostContent content={content} />
       </div>
+      {truncated && canTruncate && (
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-1 text-[#2d2d2d]/50 underline underline-offset-2 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)]"
+        >
+          {expanded ? "Show less" : "Read more"}
+        </button>
+      )}
       <div className="flex items-center justify-between mt-2">
         <span className="text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">
           {timestamp}
         </span>
         <div className="flex items-center gap-3">
-          {truncated && canTruncate && expanded && (
-            <button
-              onClick={() => setExpanded(false)}
-              className="text-sm text-[#2d2d2d]/40 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)]"
-            >
-              Show less
-            </button>
-          )}
           {action}
         </div>
       </div>
