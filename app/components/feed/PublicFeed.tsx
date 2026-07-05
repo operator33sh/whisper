@@ -74,11 +74,11 @@ export default function PublicFeed() {
     const filter: Record<string, unknown> = { kinds: [1], limit: BATCH };
     if (until) filter.until = until;
 
-    let count = 0;
+    let totalFromRelay = 0;
     const sub = pool.subscribeMany(relays, [filter as Parameters<typeof pool.subscribeMany>[1][0]], {
       onevent(event: Event) {
+        totalFromRelay++;
         if (event.tags.some((t) => t[0] === "e")) return; // skip replies
-        count++;
         allPostIds.current.add(event.id);
         setPosts((prev) => {
           if (prev.find((e) => e.id === event.id)) return prev;
@@ -86,7 +86,7 @@ export default function PublicFeed() {
         });
       },
       oneose() {
-        if (count === 0) setHasMore(false);
+        if (totalFromRelay === 0) setHasMore(false);
         sub.close();
         openReplyCountSub();
         if (until) setLoadingMore(false);
