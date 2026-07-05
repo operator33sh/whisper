@@ -63,6 +63,7 @@ export default function EmojiPicker({ onSelect, onClose }: Props) {
     <div
       ref={ref}
       className="w-64 max-h-72 overflow-y-auto bg-white border border-[#2d2d2d]/20 rounded-lg shadow-lg p-2"
+      onWheel={(e) => e.stopPropagation()}
     >
       {CATEGORIES.map(({ label, emojis }) => (
         <div key={label} className="mb-2">
