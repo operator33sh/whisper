@@ -51,6 +51,7 @@ export default function ProfileModal({ pubkey, onClose }: Props) {
       <div
         className="bg-[#f9f9f7] rounded-lg p-8 w-full max-w-lg flex flex-col gap-4"
         onClick={(e) => e.stopPropagation()}
+        onWheel={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-4">
           <Avatar pubkey={pubkey} picture={profile?.picture} size={48} />
