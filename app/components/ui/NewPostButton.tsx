@@ -5,6 +5,7 @@ import { useNostrContext } from "@/app/components/NostrProvider";
 import { useRelays } from "@/app/hooks/useRelays";
 import { finalizeEvent } from "nostr-tools";
 import { decode } from "nostr-tools/nip19";
+import EmojiPicker from "@/app/components/ui/EmojiPicker";
 
 const STORAGE_KEY = "whisper:nsec";
 
@@ -16,8 +17,22 @@ export default function NewPostButton() {
   const [sending, setSending] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [emojiOpen, setEmojiOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function handleEmojiSelect(emoji: string) {
+    const ta = textareaRef.current;
+    if (!ta) { setText((prev) => prev + emoji); return; }
+    const start = ta.selectionStart ?? text.length;
+    const end = ta.selectionEnd ?? text.length;
+    const next = text.slice(0, start) + emoji + text.slice(end);
+    setText(next);
+    requestAnimationFrame(() => {
+      ta.selectionStart = ta.selectionEnd = start + emoji.length;
+      ta.focus();
+    });
+  }
 
   useEffect(() => {
     if (open) textareaRef.current?.focus();
@@ -156,6 +171,19 @@ export default function NewPostButton() {
               />
               <button
                 type="button"
+                onClick={() => setEmojiOpen((v) => !v)}
+                className="absolute bottom-2 right-9 text-[#2d2d2d]/40 hover:text-[#2d2d2d] transition-colors"
+                aria-label="Insert emoji"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                  <line x1="9" y1="9" x2="9.01" y2="9"/>
+                  <line x1="15" y1="9" x2="15.01" y2="9"/>
+                </svg>
+              </button>
+              <button
+                type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadProgress !== null}
                 className="absolute bottom-2 right-2 text-[#2d2d2d]/40 hover:text-[#2d2d2d] transition-colors disabled:opacity-30"
@@ -165,6 +193,11 @@ export default function NewPostButton() {
                   <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
                 </svg>
               </button>
+              {emojiOpen && (
+                <div className="absolute right-0 bottom-10 z-10">
+                  <EmojiPicker onSelect={handleEmojiSelect} onClose={() => setEmojiOpen(false)} />
+                </div>
+              )}
               <input
                 ref={fileInputRef}
                 type="file"
