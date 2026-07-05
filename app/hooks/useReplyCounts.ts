@@ -26,11 +26,9 @@ export function useReplyCounts(eventIds: string[]): { counts: Map<string, number
     setLoading(true);
 
     const CHUNK = 50;
-    const MAX_IDS = 200;
-    const limited = debouncedIds.slice(0, MAX_IDS);
     const chunks: string[][] = [];
-    for (let i = 0; i < limited.length; i += CHUNK) {
-      chunks.push(limited.slice(i, i + CHUNK));
+    for (let i = 0; i < debouncedIds.length; i += CHUNK) {
+      chunks.push(debouncedIds.slice(i, i + CHUNK));
     }
 
     // Process chunks sequentially: one REQ open at a time
