@@ -44,6 +44,7 @@ export default function PublicFeed() {
   // Reopen reply-count sub with all accumulated post IDs
   function openReplyCountSub() {
     const ids = Array.from(allPostIds.current);
+    console.log(`[PublicFeed] openReplyCountSub tracking ${ids.length} post IDs`);
     if (ids.length === 0) return;
     replySubRef.current?.close();
 
@@ -59,6 +60,7 @@ export default function PublicFeed() {
         seenReplies.current.add(event.id);
         const eTag = event.tags.filter((t) => t[0] === "e").at(-1)?.[1];
         if (!eTag) return;
+        console.log(`[PublicFeed] reply counted for post ${eTag.slice(0, 8)}...`);
         setReplyCounts((prev) => {
           const next = new Map(prev);
           next.set(eTag, (next.get(eTag) ?? 0) + 1);
@@ -74,11 +76,20 @@ export default function PublicFeed() {
     const filter: Record<string, unknown> = { kinds: [1], limit: BATCH };
     if (until) filter.until = until;
 
+    console.log("[PublicFeed] loadBatch open", until ? `until=${until}` : "initial");
+
     let totalFromRelay = 0;
+    let replies = 0;
+    let posts = 0;
     const sub = pool.subscribeMany(relays, [filter as Parameters<typeof pool.subscribeMany>[1][0]], {
       onevent(event: Event) {
         totalFromRelay++;
-        if (event.tags.some((t) => t[0] === "e")) return; // skip replies
+        if (event.tags.some((t) => t[0] === "e")) {
+          replies++;
+          return; // skip replies
+        }
+        posts++;
+        console.log(`[PublicFeed] post received id=${event.id.slice(0, 8)} at=${event.created_at}`);
         allPostIds.current.add(event.id);
         setPosts((prev) => {
           if (prev.find((e) => e.id === event.id)) return prev;
@@ -86,6 +97,7 @@ export default function PublicFeed() {
         });
       },
       oneose() {
+        console.log(`[PublicFeed] loadBatch EOSE — total=${totalFromRelay} posts=${posts} replies=${replies} hasMore=${totalFromRelay > 0}`);
         if (totalFromRelay === 0) setHasMore(false);
         sub.close();
         openReplyCountSub();
@@ -97,6 +109,7 @@ export default function PublicFeed() {
 
   // Initial load
   useEffect(() => {
+    console.log("[PublicFeed] initial load");
     setLoadingPosts(true);
     setPosts([]);
     setReplyCounts(new Map());
@@ -113,6 +126,7 @@ export default function PublicFeed() {
   const loadMore = useCallback(() => {
     const oldest = postsRef.current.at(-1);
     if (!oldest) return;
+    console.log(`[PublicFeed] loadMore triggered — oldest post at ${oldest.created_at}, total posts so far: ${postsRef.current.length}`);
     setLoadingMore(true);
     loadBatch(oldest.created_at - 1);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -125,7 +139,10 @@ export default function PublicFeed() {
     const el = sentinelRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting && canLoadRef.current) loadMoreRef.current(); },
+      ([entry]) => {
+        console.log(`[PublicFeed] sentinel intersecting=${entry.isIntersecting} canLoad=${canLoadRef.current}`);
+        if (entry.isIntersecting && canLoadRef.current) loadMoreRef.current();
+      },
       { threshold: 0.1 }
     );
     observer.observe(el);
