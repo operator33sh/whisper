@@ -1,21 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useHashtagContext } from "@/app/context/HashtagContext";
+import { createPortal } from "react-dom";
 import HashtagModal from "@/app/components/ui/HashtagModal";
 
 export default function HashtagLink({ tag }: { tag: string }) {
-  const ctx = useHashtagContext();
   const [open, setOpen] = useState(false);
 
   function handleClick(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    if (ctx) {
-      ctx.openHashtag(tag);
-    } else {
-      setOpen(true);
-    }
+    setOpen(true);
   }
 
   return (
@@ -29,7 +24,7 @@ export default function HashtagLink({ tag }: { tag: string }) {
       >
         #{tag}
       </span>
-      {open && <HashtagModal tag={tag} onClose={() => setOpen(false)} />}
+      {open && createPortal(<HashtagModal tag={tag} onClose={() => setOpen(false)} />, document.body)}
     </>
   );
 }
