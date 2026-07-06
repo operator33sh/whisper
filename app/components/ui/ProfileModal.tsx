@@ -8,6 +8,8 @@ import { useFollows } from "@/app/hooks/useFollows";
 import { useRelays } from "@/app/hooks/useRelays";
 import Avatar from "@/app/components/ui/Avatar";
 import ProfileFeed from "@/app/components/ui/ProfileFeed";
+import HashtagFeed from "@/app/components/feed/HashtagFeed";
+import { HashtagContext } from "@/app/context/HashtagContext";
 import { npubEncode } from "nostr-tools/nip19";
 import { finalizeEvent } from "nostr-tools";
 import { decode } from "nostr-tools/nip19";
@@ -111,6 +113,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
   const [pending, setPending] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [hashtagPanel, setHashtagPanel] = useState<string | null>(null);
 
   const [editName, setEditName] = useState("");
   const [editDisplayName, setEditDisplayName] = useState("");
@@ -225,15 +228,20 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
       >
 
         {/* Sliding panels */}
+        <HashtagContext.Provider value={{ openHashtag: (tag) => { setEditing(false); setHashtagPanel(tag); } }}>
         <div
           className="flex h-full transition-transform duration-300 ease-in-out"
           style={{
-            width: "200%",
-            transform: editing ? "translateX(-50%)" : "translateX(0)",
+            width: "300%",
+            transform: editing
+              ? "translateX(-33.33%)"
+              : hashtagPanel
+              ? "translateX(-66.67%)"
+              : "translateX(0)",
           }}
         >
           {/* ── Profile view panel ── */}
-          <div className="w-1/2 flex flex-col">
+          <div className="w-1/3 flex flex-col">
             {/* Banner */}
             <div className="h-28 bg-[#e8e8e5] rounded-t-lg overflow-hidden shrink-0">
               {profile?.banner && (
@@ -312,7 +320,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
           </div>
 
           {/* ── Edit panel ── */}
-          <div className="w-1/2 flex flex-col">
+          <div className="w-1/3 flex flex-col">
             {/* Banner upload */}
             <div className="relative h-28 bg-[#e8e8e5] rounded-t-lg overflow-hidden shrink-0 group">
               {editBanner && (
@@ -452,7 +460,29 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
             </div>
           </div>
 
+          {/* ── Hashtag panel ── */}
+          <div className="w-1/3 flex flex-col h-full">
+            <div className="flex items-center justify-between px-8 pt-6 pb-4 shrink-0 border-b border-[#2d2d2d]/10">
+              <div>
+                <h2 className="text-xs uppercase tracking-widest text-[#2d2d2d]/40 font-[family-name:var(--font-inter)]">Hashtag</h2>
+                <p className="mt-0.5 text-sm text-[#2d2d2d]/70 font-[family-name:var(--font-inter)]">#{hashtagPanel}</p>
+              </div>
+              <button
+                onClick={() => setHashtagPanel(null)}
+                className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
+              >
+                ← Back
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden px-8 py-4">
+              <div className="relative h-full">
+                {hashtagPanel && <HashtagFeed tag={hashtagPanel} />}
+              </div>
+            </div>
+          </div>
+
         </div>
+        </HashtagContext.Provider>
       </div>
     </div>
     </>
