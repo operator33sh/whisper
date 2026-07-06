@@ -116,6 +116,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
   const [viewPubkey, setViewPubkey] = useState(pubkey);
   const [editing, setEditing] = useState(false);
   const [hashtagPanel, setHashtagPanel] = useState<string | null>(null);
+  const [prevHashtag, setPrevHashtag] = useState<string | null>(null);
 
   const [editName, setEditName] = useState("");
   const [editDisplayName, setEditDisplayName] = useState("");
@@ -230,7 +231,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
       >
 
         {/* Sliding panels */}
-        <ProfileContext.Provider value={{ openProfile: (pk) => { setViewPubkey(pk); setHashtagPanel(null); setEditing(false); } }}>
+        <ProfileContext.Provider value={{ openProfile: (pk) => { setPrevHashtag(hashtagPanel); setViewPubkey(pk); setHashtagPanel(null); setEditing(false); } }}>
         <HashtagContext.Provider value={{ openHashtag: (tag) => { setEditing(false); setHashtagPanel(tag); } }}>
         <div
           className="flex h-full transition-transform duration-300 ease-in-out"
@@ -298,7 +299,16 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
               <div className="h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
               <ProfileFeed pubkey={viewPubkey} />
 
-              <div className="flex justify-end gap-3 pt-2">
+              <div className="flex justify-between gap-3 pt-2">
+                {viewPubkey !== pubkey && prevHashtag ? (
+                  <button
+                    onClick={() => setHashtagPanel(prevHashtag)}
+                    className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
+                  >
+                    ← Back
+                  </button>
+                ) : <div />}
+                <div className="flex gap-3">
                 <button
                   onClick={onClose}
                   className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
@@ -318,6 +328,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
                     {pending ? "…" : isFollowing ? "Unfollow" : "Follow"}
                   </button>
                 )}
+                </div>
               </div>
             </div>
           </div>
