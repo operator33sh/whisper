@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import NprofileLink from "@/app/components/ui/NprofileLink";
 import NeventEmbed from "@/app/components/ui/NeventEmbed";
+import HashtagLink from "@/app/components/ui/HashtagLink";
 
 function ImageModal({ src, onClose }: { src: string; onClose: () => void }) {
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/80 flex items-center justify-center z-[70] p-4"
       onClick={onClose}
     >
       <img
@@ -16,7 +18,8 @@ function ImageModal({ src, onClose }: { src: string; onClose: () => void }) {
         className="max-w-3xl max-h-[80vh] w-full rounded object-contain"
         onClick={(e) => e.stopPropagation()}
       />
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -26,6 +29,7 @@ const URL_REGEX = /(https?:\/\/[^\s]+)/g;
 const NPROFILE_REGEX = /(nostr:n(?:profile|pub)1[a-z0-9]+|npub1[a-z0-9]+)/g;
 const NEVENT_REGEX = /(nostr:(?:nevent|note)1[a-z0-9]+)/g;
 const YOUTUBE_REGEX = /(https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)[\w-]+(?:[?&][\w=&%-]*)?)/gi;
+const HASHTAG_REGEX = /(#[a-zA-Z0-9_]+)/g;
 
 function getYouTubeId(url: string): string | null {
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]+)/);
@@ -58,7 +62,15 @@ function renderTextWithLinks(text: string, keyPrefix: string) {
           </a>
         );
       }
-      return upart || null;
+      // Hashtag splitting within non-URL text
+      const hparts = upart.split(HASHTAG_REGEX);
+      return hparts.map((hpart, hi) => {
+        if (HASHTAG_REGEX.test(hpart)) {
+          HASHTAG_REGEX.lastIndex = 0;
+          return <HashtagLink key={`${keyPrefix}-n${ni}-u${ui}-h${hi}`} tag={hpart.slice(1)} />;
+        }
+        return hpart || null;
+      });
     });
   });
 }

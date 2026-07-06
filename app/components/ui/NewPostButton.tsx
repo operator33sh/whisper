@@ -158,7 +158,7 @@ export default function NewPostButton() {
 
       {open && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-[#f9f9f7] rounded-lg p-8 w-full max-w-md flex flex-col gap-4">
+          <div className="bg-[#f9f9f7] rounded-lg p-8 w-full max-w-md flex flex-col gap-4" onWheel={(e) => e.stopPropagation()}>
             <h2 className="text-xl font-semibold">New Whisper</h2>
             <div className="relative">
               <textarea
