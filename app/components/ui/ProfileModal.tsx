@@ -10,6 +10,7 @@ import Avatar from "@/app/components/ui/Avatar";
 import ProfileFeed from "@/app/components/ui/ProfileFeed";
 import HashtagFeed from "@/app/components/feed/HashtagFeed";
 import { HashtagContext } from "@/app/context/HashtagContext";
+import { ProfileContext } from "@/app/context/ProfileContext";
 import { npubEncode } from "nostr-tools/nip19";
 import { finalizeEvent } from "nostr-tools";
 import { decode } from "nostr-tools/nip19";
@@ -112,6 +113,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
   const unfollow = useFollows((s) => s.unfollow);
   const [pending, setPending] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
+  const [viewPubkey, setViewPubkey] = useState(pubkey);
   const [editing, setEditing] = useState(false);
   const [hashtagPanel, setHashtagPanel] = useState<string | null>(null);
 
@@ -130,13 +132,13 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetchProfiles(pool, [pubkey]);
-  }, [pool, pubkey, fetchProfiles]);
+    fetchProfiles(pool, [viewPubkey]);
+  }, [pool, viewPubkey, fetchProfiles]);
 
-  const profile = profiles.get(pubkey);
-  const name = profile?.display_name || profile?.name || npubEncode(pubkey).slice(0, 20) + "…";
-  const npub = npubEncode(pubkey);
-  const isFollowing = follows.includes(pubkey);
+  const profile = profiles.get(viewPubkey);
+  const name = profile?.display_name || profile?.name || npubEncode(viewPubkey).slice(0, 20) + "…";
+  const npub = npubEncode(viewPubkey);
+  const isFollowing = follows.includes(viewPubkey);
 
   function openEdit() {
     setEditName(profile?.name || "");
@@ -154,8 +156,8 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
   async function toggleFollow() {
     setPending(true);
     try {
-      if (isFollowing) await unfollow(pool, pubkey);
-      else await follow(pool, pubkey);
+      if (isFollowing) await unfollow(pool, viewPubkey);
+      else await follow(pool, viewPubkey);
     } catch (e) {
       console.error("[ProfileModal]", e);
     } finally {
@@ -228,6 +230,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
       >
 
         {/* Sliding panels */}
+        <ProfileContext.Provider value={{ openProfile: (pk) => { setViewPubkey(pk); setHashtagPanel(null); setEditing(false); } }}>
         <HashtagContext.Provider value={{ openHashtag: (tag) => { setEditing(false); setHashtagPanel(tag); } }}>
         <div
           className="flex h-full transition-transform duration-300 ease-in-out"
@@ -258,7 +261,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
                     className={profile?.picture ? "cursor-pointer" : "cursor-default"}
                     aria-label="View profile picture"
                   >
-                    <Avatar pubkey={pubkey} picture={profile?.picture} size={48} />
+                    <Avatar pubkey={viewPubkey} picture={profile?.picture} size={48} />
                   </button>
                   <div className="flex flex-col min-w-0">
                     <span className="font-semibold text-lg leading-tight truncate">{name}</span>
@@ -267,7 +270,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
                     </span>
                   </div>
                 </div>
-                {isSelf && (
+                {isSelf && viewPubkey === pubkey && (
                   <button
                     onClick={openEdit}
                     className="text-xs px-3 py-1.5 rounded border border-[#2d2d2d] bg-white text-[#2d2d2d] font-[family-name:var(--font-inter)] hover:bg-[#f0f0ee] transition-colors shrink-0 ml-4"
@@ -293,7 +296,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
               )}
 
               <div className="h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
-              <ProfileFeed pubkey={pubkey} />
+              <ProfileFeed pubkey={viewPubkey} />
 
               <div className="flex justify-end gap-3 pt-2">
                 <button
@@ -302,7 +305,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
                 >
                   Close
                 </button>
-                {!isSelf && (
+                {!(isSelf && viewPubkey === pubkey) && (
                   <button
                     onClick={toggleFollow}
                     disabled={pending}
@@ -483,6 +486,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
 
         </div>
         </HashtagContext.Provider>
+        </ProfileContext.Provider>
       </div>
     </div>
     </>
