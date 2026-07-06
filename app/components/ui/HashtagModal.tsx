@@ -9,6 +9,7 @@ import HashtagFeed from "@/app/components/feed/HashtagFeed";
 import ProfileFeed from "@/app/components/ui/ProfileFeed";
 import Avatar from "@/app/components/ui/Avatar";
 import { ProfileContext } from "@/app/context/ProfileContext";
+import { HashtagContext } from "@/app/context/HashtagContext";
 import { npubEncode } from "nostr-tools/nip19";
 
 interface Props {
@@ -120,10 +121,24 @@ function ProfilePanel({ pubkey, onBack, onClose }: { pubkey: string; onBack: () 
 }
 
 export default function HashtagModal({ tag, onClose }: Props) {
+  const [currentTag, setCurrentTag] = useState(tag);
   const [profilePubkey, setProfilePubkey] = useState<string | null>(null);
+  const [prevProfilePubkey, setPrevProfilePubkey] = useState<string | null>(null);
 
   return (
-    <ProfileContext.Provider value={{ openProfile: setProfilePubkey }}>
+    <ProfileContext.Provider value={{
+      openProfile: (pk) => {
+        setPrevProfilePubkey(null);
+        setProfilePubkey(pk);
+      }
+    }}>
+    <HashtagContext.Provider value={{
+      openHashtag: (t) => {
+        setPrevProfilePubkey(profilePubkey);
+        setCurrentTag(t);
+        setProfilePubkey(null);
+      }
+    }}>
       <div
         className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
         onClick={onClose}
@@ -147,17 +162,27 @@ export default function HashtagModal({ tag, onClose }: Props) {
               <div className="flex items-center justify-between px-8 pt-6 pb-4 shrink-0 border-b border-[#2d2d2d]/10">
                 <div>
                   <h2 className="text-xs uppercase tracking-widest text-[#2d2d2d]/40 font-[family-name:var(--font-inter)]">Hashtag</h2>
-                  <p className="mt-0.5 text-sm text-[#2d2d2d]/70 font-[family-name:var(--font-inter)]">#{tag}</p>
+                  <p className="mt-0.5 text-sm text-[#2d2d2d]/70 font-[family-name:var(--font-inter)]">#{currentTag}</p>
                 </div>
-                <button
-                  onClick={onClose}
-                  className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
-                >
-                  Close
-                </button>
+                <div className="flex items-center gap-2">
+                  {prevProfilePubkey && (
+                    <button
+                      onClick={() => setProfilePubkey(prevProfilePubkey)}
+                      className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
+                    >
+                      ← Back
+                    </button>
+                  )}
+                  <button
+                    onClick={onClose}
+                    className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
               <div className="flex-1 overflow-hidden px-8 py-4">
-                <HashtagFeed tag={tag} />
+                <HashtagFeed tag={currentTag} />
               </div>
             </div>
 
@@ -174,6 +199,7 @@ export default function HashtagModal({ tag, onClose }: Props) {
           </div>
         </div>
       </div>
+    </HashtagContext.Provider>
     </ProfileContext.Provider>
   );
 }
