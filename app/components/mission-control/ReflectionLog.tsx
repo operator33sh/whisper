@@ -53,7 +53,7 @@ export default function ReflectionLog({ pubkey }: Props) {
     );
   }
 
-  if (!events.length) {
+  if (!events.length && !loading) {
     return (
       <p className="text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] text-sm">
         No posts yet.
@@ -61,9 +61,11 @@ export default function ReflectionLog({ pubkey }: Props) {
     );
   }
 
+  const replies = events.filter((e) => e.tags.some((t) => t[0] === "e"));
+
   return (
     <ul className="flex flex-col">
-      {events.map((event) => {
+      {replies.map((event) => {
         const rootId = getRootId(event);
         return (
           <li key={event.id} className="leading-relaxed pt-8 first:pt-0">

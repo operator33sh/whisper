@@ -15,7 +15,7 @@ export default function HashtagModal({ tag, onClose }: Props) {
     >
       <div
         className="bg-[#f9f9f7] rounded-lg w-full max-w-lg overflow-hidden flex flex-col"
-        style={{ maxHeight: "85vh" }}
+        style={{ height: "836px", maxHeight: "90vh" }}
         onClick={(e) => e.stopPropagation()}
         onWheel={(e) => e.stopPropagation()}
       >
@@ -34,7 +34,7 @@ export default function HashtagModal({ tag, onClose }: Props) {
         </div>
 
         {/* Feed */}
-        <div className="flex-1 overflow-hidden px-8 py-4 flex flex-col">
+        <div className="flex-1 overflow-hidden px-8 py-4">
           <HashtagFeed tag={tag} />
         </div>
       </div>

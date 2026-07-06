@@ -222,6 +222,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
       <div
         className="bg-[#f9f9f7] rounded-lg w-full max-w-lg overflow-hidden"
+        style={{ height: "836px", maxHeight: "90vh" }}
         onClick={(e) => e.stopPropagation()}
         onWheel={(e) => e.stopPropagation()}
       >
@@ -229,7 +230,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
         {/* Sliding panels */}
         <HashtagContext.Provider value={{ openHashtag: (tag) => { setEditing(false); setHashtagPanel(tag); } }}>
         <div
-          className="flex transition-transform duration-300 ease-in-out"
+          className="flex h-full transition-transform duration-300 ease-in-out"
           style={{
             width: "300%",
             transform: editing
@@ -460,7 +461,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
           </div>
 
           {/* ── Hashtag panel ── */}
-          <div className="w-1/3 flex flex-col overflow-hidden">
+          <div className="w-1/3 flex flex-col h-full">
             <div className="flex items-center justify-between px-8 pt-6 pb-4 shrink-0 border-b border-[#2d2d2d]/10">
               <div>
                 <h2 className="text-xs uppercase tracking-widest text-[#2d2d2d]/40 font-[family-name:var(--font-inter)]">Hashtag</h2>
@@ -473,8 +474,10 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
                 ← Back
               </button>
             </div>
-            <div className="flex-1 overflow-hidden px-8 py-4 flex flex-col" style={{ height: "500px" }}>
-              {hashtagPanel && <HashtagFeed tag={hashtagPanel} />}
+            <div className="flex-1 overflow-hidden px-8 py-4">
+              <div className="relative h-full">
+                {hashtagPanel && <HashtagFeed tag={hashtagPanel} />}
+              </div>
             </div>
           </div>
         </div>
