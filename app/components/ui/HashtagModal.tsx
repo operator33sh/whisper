@@ -120,25 +120,24 @@ function ProfilePanel({ pubkey, onBack, onClose }: { pubkey: string; onBack: () 
   );
 }
 
+type NavEntry = { type: "hashtag"; tag: string } | { type: "profile"; pubkey: string };
+
 export default function HashtagModal({ tag, onClose }: Props) {
-  const [currentTag, setCurrentTag] = useState(tag);
-  const [profilePubkey, setProfilePubkey] = useState<string | null>(null);
-  const [prevProfilePubkey, setPrevProfilePubkey] = useState<string | null>(null);
+  const [history, setHistory] = useState<NavEntry[]>([{ type: "hashtag", tag }]);
+
+  const current = history[history.length - 1];
+  const canGoBack = history.length > 1;
+
+  function goBack() { setHistory((h) => h.slice(0, -1)); }
+  function openProfile(pk: string) { setHistory((h) => [...h, { type: "profile", pubkey: pk }]); }
+  function openHashtag(t: string) { setHistory((h) => [...h, { type: "hashtag", tag: t }]); }
+
+  const currentTag = current.type === "hashtag" ? current.tag : (history.findLast((e) => e.type === "hashtag") as { type: "hashtag"; tag: string } | undefined)?.tag ?? tag;
+  const profilePubkey = current.type === "profile" ? current.pubkey : null;
 
   return (
-    <ProfileContext.Provider value={{
-      openProfile: (pk) => {
-        setPrevProfilePubkey(null);
-        setProfilePubkey(pk);
-      }
-    }}>
-    <HashtagContext.Provider value={{
-      openHashtag: (t) => {
-        setPrevProfilePubkey(profilePubkey);
-        setCurrentTag(t);
-        setProfilePubkey(null);
-      }
-    }}>
+    <ProfileContext.Provider value={{ openProfile }}>
+    <HashtagContext.Provider value={{ openHashtag }}>
       <div
         className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
         onClick={onClose}
@@ -165,9 +164,9 @@ export default function HashtagModal({ tag, onClose }: Props) {
                   <p className="mt-0.5 text-sm text-[#2d2d2d]/70 font-[family-name:var(--font-inter)]">#{currentTag}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  {prevProfilePubkey && (
+                  {canGoBack && (
                     <button
-                      onClick={() => setProfilePubkey(prevProfilePubkey)}
+                      onClick={goBack}
                       className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
                     >
                       ← Back
@@ -191,7 +190,7 @@ export default function HashtagModal({ tag, onClose }: Props) {
               {profilePubkey && (
                 <ProfilePanel
                   pubkey={profilePubkey}
-                  onBack={() => setProfilePubkey(null)}
+                  onBack={goBack}
                   onClose={onClose}
                 />
               )}
