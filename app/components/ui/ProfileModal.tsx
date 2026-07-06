@@ -224,16 +224,9 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
         onWheel={(e) => e.stopPropagation()}
       >
 
-        {/* Sliding panels */}
-        <div
-          className="flex h-full transition-transform duration-300 ease-in-out"
-          style={{
-            width: "200%",
-            transform: editing ? "translateX(-50%)" : "translateX(0)",
-          }}
-        >
-          {/* ── Profile view panel ── */}
-          <div className="w-1/2 flex flex-col">
+        {editing ? null : (
+          /* ── Profile view panel ── */
+          <div className="flex flex-col h-full">
             {/* Banner */}
             <div className="h-28 bg-[#e8e8e5] rounded-t-lg overflow-hidden shrink-0">
               {profile?.banner && (
@@ -310,9 +303,11 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
               </div>
             </div>
           </div>
+        )}
 
-          {/* ── Edit panel ── */}
-          <div className="w-1/2 flex flex-col">
+        {editing && (
+          /* ── Edit panel ── */
+          <div className="flex flex-col h-full">
             {/* Banner upload */}
             <div className="relative h-28 bg-[#e8e8e5] rounded-t-lg overflow-hidden shrink-0 group">
               {editBanner && (
@@ -451,8 +446,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
               </div>
             </div>
           </div>
-
-        </div>
+        )}
       </div>
     </div>
     </>

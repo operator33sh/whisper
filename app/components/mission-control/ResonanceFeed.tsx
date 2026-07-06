@@ -8,6 +8,8 @@ import { useMissionControl } from "@/app/hooks/useMissionControl";
 import ResonanceItem from "./ResonanceItem";
 import type { Filter } from "nostr-tools";
 
+const LAST_CHECKED_KEY = "whisper:lastCheckedMentions";
+
 interface Props {
   pubkey: string;
 }
@@ -22,10 +24,33 @@ export default function ResonanceFeed({ pubkey }: Props) {
   const activeViewRef = useRef(activeView);
   useEffect(() => { activeViewRef.current = activeView; });
 
-  // Reset signal when user opens Mission Control
+  // Startup: check for missed mentions since last visit
+  useEffect(() => {
+    if (!relays.length) return;
+    const lastChecked = parseInt(localStorage.getItem(LAST_CHECKED_KEY) || "0", 10);
+    if (!lastChecked) return; // first run, no baseline yet
+    const sub = pool.subscribeMany(
+      relays,
+      [{ kinds: [1], "#p": [pubkey], since: lastChecked, limit: 1 }],
+      {
+        onevent() {
+          setHasPendingMentions(true);
+          sub.close();
+        },
+        oneose() {
+          sub.close();
+        },
+      }
+    );
+    return () => sub.close();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pool, pubkey, relays.join(",")]);
+
+  // Reset signal + save timestamp when user opens Mission Control
   useEffect(() => {
     if (activeView === "mission-control") {
       setHasPendingMentions(false);
+      localStorage.setItem(LAST_CHECKED_KEY, Math.floor(Date.now() / 1000).toString());
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeView]);

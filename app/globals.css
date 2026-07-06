@@ -29,17 +29,17 @@ button, input, label, nav {
 
 @keyframes sacred-glow {
   0%, 100% {
-    opacity: 0.25;
+    opacity: 0.3;
     text-shadow: none;
   }
   50% {
-    opacity: 0.9;
-    text-shadow: 0 0 8px rgba(100, 180, 255, 0.8), 0 0 20px rgba(100, 180, 255, 0.35);
+    opacity: 1;
+    text-shadow: 0 0 10px rgba(100, 180, 255, 1), 0 0 28px rgba(100, 180, 255, 0.6), 0 0 50px rgba(100, 180, 255, 0.25);
   }
 }
 
 .animate-sacred-glow {
-  animation: sacred-glow 3.5s ease-in-out infinite;
+  animation: sacred-glow 2.5s ease-in-out infinite;
 }
 
 * {
