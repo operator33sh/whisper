@@ -31,6 +31,7 @@ export default function HashtagFeed({ tag, scrollable = true }: { tag: string; s
   const sentinelRef = useRef<HTMLDivElement>(null);
   const postsRef = useRef<Event[]>([]);
   const replySubsRef = useRef<Array<{ close: () => void }>>([]);
+  const liveSubRef = useRef<{ close: () => void } | null>(null);
   const seenReplies = useRef<Set<string>>(new Set());
   const canLoadRef = useRef(false);
   const loadMoreRef = useRef<() => void>(() => {});
@@ -107,8 +108,24 @@ export default function HashtagFeed({ tag, scrollable = true }: { tag: string; s
     seenReplies.current = new Set();
     replySubsRef.current.forEach((s) => s.close());
     replySubsRef.current = [];
+    liveSubRef.current?.close();
     loadBatch();
+
+    const since = Math.floor(Date.now() / 1000);
+    liveSubRef.current = pool.subscribeMany(relays, [{ kinds: [1], "#t": [tag.toLowerCase()], since }], {
+      onevent(event: Event) {
+        if (event.tags.some((t) => t[0] === "e")) return;
+        if (seenIds.current.has(event.id)) return;
+        seenIds.current.add(event.id);
+        setPosts((prev) => {
+          if (prev.find((e) => e.id === event.id)) return prev;
+          return [event, ...prev].sort((a, b) => b.created_at - a.created_at);
+        });
+      },
+    });
+
     return () => {
+      liveSubRef.current?.close();
       replySubsRef.current.forEach((s) => s.close());
       replySubsRef.current = [];
     };
