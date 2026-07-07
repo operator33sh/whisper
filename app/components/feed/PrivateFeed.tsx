@@ -216,7 +216,7 @@ export default function PrivateFeed() {
                     onClick={() => setExpandedPosts((prev) => new Set([...prev, event.id]))}
                     className="text-xs text-[#2d2d2d]/40 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)] mt-1"
                   >
-                    Post minimalized +
+                    + Post minimalized
                   </button>
                 ) : (
                   <>
