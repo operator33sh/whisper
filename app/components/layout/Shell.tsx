@@ -201,13 +201,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             Email: <span className="pointer-events-auto">operator33.sh@proton.me</span>
             {" · "}
             Support Whisper:{" "}
-            <button
-              className="pointer-events-auto font-[family-name:var(--font-inter)] cursor-pointer"
-              onClick={() => navigator.clipboard.writeText("bitcoincash:qq3u8k4afsw35rcrnkg6vaf20et57fsdd5n9r5g0py")}
-              title="Click to copy"
-            >
-              bitcoincash:qq3u8k4afsw35rcrnkg6vaf20et57fsdd5n9r5g0py
-            </button>
+            <span className="pointer-events-auto select-text">bitcoincash:qq3u8k4afsw35rcrnkg6vaf20et57fsdd5n9r5g0py</span>
           </p>
         </div>
       </footer>
