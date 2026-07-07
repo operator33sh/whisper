@@ -194,6 +194,23 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
       {settingsOpen && <RelaySettings onClose={() => setSettingsOpen(false)} />}
       {profileOpen && myPubkey && <ProfileModal pubkey={myPubkey} onClose={() => setProfileOpen(false)} isSelf />}
+
+      <footer className="fixed bottom-0 left-12 right-0 py-2 pointer-events-none">
+        <div className="w-[928px] mx-auto px-6 text-right">
+          <p className="text-[10px] text-[#2d2d2d] font-[family-name:var(--font-inter)]">
+            Email: <span className="pointer-events-auto">operator33.sh@proton.me</span>
+            {" · "}
+            Support Whisper:{" "}
+            <button
+              className="pointer-events-auto font-[family-name:var(--font-inter)] cursor-pointer"
+              onClick={() => navigator.clipboard.writeText("bitcoincash:qq3u8k4afsw35rcrnkg6vaf20et57fsdd5n9r5g0py")}
+              title="Click to copy"
+            >
+              bitcoincash:qq3u8k4afsw35rcrnkg6vaf20et57fsdd5n9r5g0py
+            </button>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
