@@ -24,6 +24,7 @@ export default function SearchResults({ query }: Props) {
   const unfollow = useFollows((s) => s.unfollow);
   const myPubkey = getNsecPubkey();
   const [results, setResults] = useState<Event[]>([]);
+  const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState<string | null>(null);
   const { counts: replyCounts } = useReplyCounts(results.map((e) => e.id));
@@ -77,33 +78,47 @@ export default function SearchResults({ query }: Props) {
           <p className="text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] text-sm">No results.</p>
         )}
         <ul className="overflow-y-auto h-full pr-2">
-          {results.map((event) => (
-            <li key={event.id} className="leading-relaxed bg-[#f9f9f7] pt-8 first:pt-0">
-              <div className="flex items-center justify-between gap-4 mb-2">
-                <UserMeta pubkey={event.pubkey} />
-                {event.pubkey !== myPubkey && (
+          {results.map((event) => {
+            const isMinimized = event.tags.filter((t) => t[0] === "t").length > 8 && !expandedPosts.has(event.id);
+            return (
+              <li key={event.id} className="leading-relaxed bg-[#f9f9f7] pt-8 first:pt-0">
+                <div className="flex items-center justify-between gap-4 mb-2">
+                  <UserMeta pubkey={event.pubkey} />
+                  {event.pubkey !== myPubkey && (
+                    <button
+                      onClick={() => handleFollowToggle(event.pubkey)}
+                      disabled={pending === event.pubkey}
+                      className={`shrink-0 text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                        follows.includes(event.pubkey)
+                          ? "bg-white text-[#2d2d2d] border border-[#2d2d2d] hover:bg-[#f0f0ee]"
+                          : "bg-black text-white hover:bg-[#2d2d2d]"
+                      }`}
+                    >
+                      {pending === event.pubkey ? "…" : follows.includes(event.pubkey) ? "Unfollow" : "Follow"}
+                    </button>
+                  )}
+                </div>
+                {isMinimized ? (
                   <button
-                    onClick={() => handleFollowToggle(event.pubkey)}
-                    disabled={pending === event.pubkey}
-                    className={`shrink-0 text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                      follows.includes(event.pubkey)
-                        ? "bg-white text-[#2d2d2d] border border-[#2d2d2d] hover:bg-[#f0f0ee]"
-                        : "bg-black text-white hover:bg-[#2d2d2d]"
-                    }`}
+                    onClick={() => setExpandedPosts((prev) => new Set([...prev, event.id]))}
+                    className="text-xs text-[#2d2d2d]/40 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)] mt-1"
                   >
-                    {pending === event.pubkey ? "…" : follows.includes(event.pubkey) ? "Unfollow" : "Follow"}
+                    Post minimalized +
                   </button>
+                ) : (
+                  <>
+                    <PostBody
+                      content={event.content}
+                      timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
+                      action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} />}
+                    />
+                    <PostReplies eventId={event.id} count={replyCounts.get(event.id) ?? 0} replyCounts={replyCounts} />
+                  </>
                 )}
-              </div>
-              <PostBody
-                content={event.content}
-                timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
-                action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} />}
-              />
-              <PostReplies eventId={event.id} count={replyCounts.get(event.id) ?? 0} replyCounts={replyCounts} />
-              <div className="mt-8 h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
-            </li>
-          ))}
+                <div className="mt-8 h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>

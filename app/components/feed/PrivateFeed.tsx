@@ -22,6 +22,7 @@ export default function PrivateFeed() {
   const myPubkey = getNsecPubkey();
 
   const [events, setEvents] = useState<Event[]>([]);
+  const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());
   const { counts: replyCounts } = useReplyCounts(events.map((e) => e.id));
   const [liveReplyCounts, setLiveReplyCounts] = useState<Map<string, number>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -194,29 +195,43 @@ export default function PrivateFeed() {
           </div>
         )}
         <ul ref={feedRef} className="relative overflow-y-auto h-full pr-2">
-          {displayEvents.map((event: Event) => (
-            <li key={event.id} className="leading-relaxed bg-[#f9f9f7] pt-8 first:pt-0">
-              <div className="flex items-center justify-between gap-4 mb-2">
-                <UserMeta pubkey={event.pubkey} />
-                {event.pubkey !== myPubkey && (
+          {displayEvents.map((event: Event) => {
+            const isMinimized = event.tags.filter((t) => t[0] === "t").length > 8 && !expandedPosts.has(event.id);
+            return (
+              <li key={event.id} className="leading-relaxed bg-[#f9f9f7] pt-8 first:pt-0">
+                <div className="flex items-center justify-between gap-4 mb-2">
+                  <UserMeta pubkey={event.pubkey} />
+                  {event.pubkey !== myPubkey && (
+                    <button
+                      onClick={() => handleUnfollow(event.pubkey)}
+                      disabled={pending === event.pubkey}
+                      className="shrink-0 bg-white text-[#2d2d2d] border border-[#2d2d2d] text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] hover:bg-[#f0f0ee] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {pending === event.pubkey ? "Unfollowing…" : "Unfollow"}
+                    </button>
+                  )}
+                </div>
+                {isMinimized ? (
                   <button
-                    onClick={() => handleUnfollow(event.pubkey)}
-                    disabled={pending === event.pubkey}
-                    className="shrink-0 bg-white text-[#2d2d2d] border border-[#2d2d2d] text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] hover:bg-[#f0f0ee] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => setExpandedPosts((prev) => new Set([...prev, event.id]))}
+                    className="text-xs text-[#2d2d2d]/40 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)] mt-1"
                   >
-                    {pending === event.pubkey ? "Unfollowing…" : "Unfollow"}
+                    Post minimalized +
                   </button>
+                ) : (
+                  <>
+                    <PostBody
+                      content={event.content}
+                      timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
+                      action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} />}
+                    />
+                    <PostReplies eventId={event.id} count={(replyCounts.get(event.id) ?? 0) + (liveReplyCounts.get(event.id) ?? 0)} replyCounts={replyCounts} />
+                  </>
                 )}
-              </div>
-              <PostBody
-                content={event.content}
-                timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
-                action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} />}
-              />
-              <PostReplies eventId={event.id} count={(replyCounts.get(event.id) ?? 0) + (liveReplyCounts.get(event.id) ?? 0)} replyCounts={replyCounts} />
-              <div className="mt-8 h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
-            </li>
-          ))}
+                <div className="mt-8 h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
+              </li>
+            );
+          })}
           <li>
             <div ref={sentinelRef} className="h-4" />
           </li>

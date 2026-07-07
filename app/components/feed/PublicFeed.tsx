@@ -22,6 +22,7 @@ export default function PublicFeed() {
   const myPubkey = getNsecPubkey();
 
   const [posts, setPosts] = useState<Event[]>([]);
+  const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());
   const [replyCounts, setReplyCounts] = useState<Map<string, number>>(new Map());
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -233,29 +234,43 @@ export default function PublicFeed() {
           </div>
         )}
         <ul ref={feedRef} className="relative overflow-y-auto h-full pr-2">
-          {filtered.map((event) => (
-            <li key={event.id} className="leading-relaxed bg-[#f9f9f7] pt-8 first:pt-0">
-              <div className="flex items-center justify-between gap-4 mb-2">
-                <UserMeta pubkey={event.pubkey} />
-                {event.pubkey !== myPubkey && (
+          {filtered.map((event) => {
+            const isMinimized = event.tags.filter((t) => t[0] === "t").length > 8 && !expandedPosts.has(event.id);
+            return (
+              <li key={event.id} className="leading-relaxed bg-[#f9f9f7] pt-8 first:pt-0">
+                <div className="flex items-center justify-between gap-4 mb-2">
+                  <UserMeta pubkey={event.pubkey} />
+                  {event.pubkey !== myPubkey && (
+                    <button
+                      onClick={() => handleFollow(event.pubkey)}
+                      disabled={pending === event.pubkey}
+                      className="shrink-0 bg-black text-white text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] hover:bg-[#2d2d2d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {pending === event.pubkey ? "Following…" : "Follow"}
+                    </button>
+                  )}
+                </div>
+                {isMinimized ? (
                   <button
-                    onClick={() => handleFollow(event.pubkey)}
-                    disabled={pending === event.pubkey}
-                    className="shrink-0 bg-black text-white text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] hover:bg-[#2d2d2d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => setExpandedPosts((prev) => new Set([...prev, event.id]))}
+                    className="text-xs text-[#2d2d2d]/40 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)] mt-1"
                   >
-                    {pending === event.pubkey ? "Following…" : "Follow"}
+                    Post minimalized +
                   </button>
+                ) : (
+                  <>
+                    <PostBody
+                      content={event.content}
+                      timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
+                      action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} />}
+                    />
+                    <PostReplies eventId={event.id} count={replyCounts.get(event.id) ?? 0} replyCounts={replyCounts} />
+                  </>
                 )}
-              </div>
-              <PostBody
-                content={event.content}
-                timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
-                action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} />}
-              />
-              <PostReplies eventId={event.id} count={replyCounts.get(event.id) ?? 0} replyCounts={replyCounts} />
-              <div className="mt-8 h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
-            </li>
-          ))}
+                <div className="mt-8 h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
+              </li>
+            );
+          })}
           <li><div ref={sentinelRef} className="h-4" /></li>
         </ul>
       </div>
