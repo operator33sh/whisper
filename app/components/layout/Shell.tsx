@@ -23,6 +23,12 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchQuery), 400);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const profiles = useProfiles((s) => s.profiles);
   const fetchProfiles = useProfiles((s) => s.fetchProfiles);
@@ -56,6 +62,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   function closeSearch() {
     setSearchOpen(false);
     setSearchQuery("");
+    setDebouncedSearch("");
   }
 
   return (
@@ -63,7 +70,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       {/* Left navigation rail */}
       <aside className="fixed left-0 top-0 h-screen w-12 bg-[#f9f9f7]/90 backdrop-blur-sm border-r border-[#2d2d2d]/10 flex flex-col items-center pt-8 gap-8 z-20">
         <button
-          onClick={() => setView("feed")}
+          onClick={() => { setView("feed"); closeSearch(); }}
           title="Whisper"
           style={{ fontFamily: "var(--font-crimson)" }}
           className={`text-lg transition-opacity select-none p-2 ${
@@ -73,7 +80,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           W
         </button>
         <button
-          onClick={() => setView("mission-control")}
+          onClick={() => { setView("mission-control"); closeSearch(); }}
           title="Mission Control"
           style={{ writingMode: "vertical-rl", letterSpacing: "0.12em" }}
           className={`text-[10px] uppercase font-[family-name:var(--font-inter)] select-none p-2 ${
@@ -114,7 +121,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               {activeView === "feed" && !searchOpen && <NewPostButton />}
 
               {/* Magnifying glass + sliding search bar */}
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-px">
                 <button
                   onClick={() => searchOpen ? closeSearch() : setSearchOpen(true)}
                   title="Search"
@@ -160,7 +167,14 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             </button>
           </header>
           <main className="flex-1 overflow-hidden">
-            {searchOpen && searchQuery ? <SearchResults query={searchQuery} /> : children}
+            <div className={`h-full ${searchOpen && debouncedSearch ? "hidden" : ""}`}>
+              {children}
+            </div>
+            {searchOpen && debouncedSearch && (
+              <div className="h-full">
+                <SearchResults query={debouncedSearch} />
+              </div>
+            )}
           </main>
         </div>
       </div>
