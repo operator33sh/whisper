@@ -16,7 +16,6 @@ export default function RelaySettings({ onClose }: Props) {
   const [input, setInput] = useState("");
   const [poolStatus, setPoolStatus] = useState<Map<string, boolean>>(new Map());
 
-  // Normalize URL the same way nostr-tools does internally
   function normalize(url: string): string {
     try {
       const u = new URL(url.indexOf("://") === -1 ? "wss://" + url : url);
@@ -29,7 +28,6 @@ export default function RelaySettings({ onClose }: Props) {
     } catch { return url; }
   }
 
-  // Poll pool connection status every 2s
   useEffect(() => {
     function refresh() {
       setPoolStatus(new Map(pool.listConnectionStatus()));
