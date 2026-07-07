@@ -23,6 +23,7 @@ export default function PrivateFeed() {
 
   const [events, setEvents] = useState<Event[]>([]);
   const { counts: replyCounts } = useReplyCounts(events.map((e) => e.id));
+  const [liveReplyCounts, setLiveReplyCounts] = useState<Map<string, number>>(new Map());
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -32,6 +33,8 @@ export default function PrivateFeed() {
   const eventsRef = useRef<Event[]>([]);
   const loadMoreRef = useRef<() => void>(() => {});
   const canLoadRef = useRef(false);
+  const liveSubRef = useRef<{ close: () => void } | null>(null);
+  const seenLiveReplies = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     function handleWheel(e: WheelEvent) {
@@ -80,6 +83,34 @@ export default function PrivateFeed() {
   useEffect(() => {
     canLoadRef.current = !loadingMore && hasMore && !loading && !loadingFollows;
   }, [loadingMore, hasMore, loading, loadingFollows]);
+
+  // Live sub: picks up new replies to posts in the feed after initial load
+  useEffect(() => {
+    if (!relays.length || follows.length === 0) return;
+    liveSubRef.current?.close();
+    setLiveReplyCounts(new Map());
+    seenLiveReplies.current = new Set();
+
+    const since = Math.floor(Date.now() / 1000);
+    liveSubRef.current = pool.subscribeMany(relays, [{ kinds: [1], since }], {
+      onevent(event: Event) {
+        if (!event.tags.some((t) => t[0] === "e")) return;
+        if (seenLiveReplies.current.has(event.id)) return;
+        seenLiveReplies.current.add(event.id);
+        const eTag = event.tags.filter((t) => t[0] === "e").at(-1)?.[1];
+        if (!eTag) return;
+        if (!eventsRef.current.find((e) => e.id === eTag)) return;
+        setLiveReplyCounts((prev) => {
+          const next = new Map(prev);
+          next.set(eTag, (next.get(eTag) ?? 0) + 1);
+          return next;
+        });
+      },
+    });
+
+    return () => liveSubRef.current?.close();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pool, relays.join(","), follows.join(",")]);
 
   const loadMore = useCallback(() => {
     const oldest = eventsRef.current.at(-1);
@@ -182,7 +213,7 @@ export default function PrivateFeed() {
                 timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
                 action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} />}
               />
-              <PostReplies eventId={event.id} count={replyCounts.get(event.id) ?? 0} replyCounts={replyCounts} />
+              <PostReplies eventId={event.id} count={(replyCounts.get(event.id) ?? 0) + (liveReplyCounts.get(event.id) ?? 0)} replyCounts={replyCounts} />
               <div className="mt-8 h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
             </li>
           ))}
