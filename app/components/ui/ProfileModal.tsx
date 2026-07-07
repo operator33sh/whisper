@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useProfiles } from "@/app/hooks/useProfiles";
-import { useFollows } from "@/app/hooks/useFollows";
+import { useFollows, getNsecPubkey } from "@/app/hooks/useFollows";
 import { useRelays } from "@/app/hooks/useRelays";
 import Avatar from "@/app/components/ui/Avatar";
 import ProfileFeed from "@/app/components/ui/ProfileFeed";
@@ -99,6 +99,59 @@ function useNostrUpload() {
   return { upload, progress, error, setError };
 }
 
+function FollowerRow({ followerPubkey, onOpenProfile }: { followerPubkey: string; onOpenProfile: (pk: string) => void }) {
+  const { pool } = useNostrContext();
+  const profiles = useProfiles((s) => s.profiles);
+  const follows = useFollows((s) => s.follows);
+  const follow = useFollows((s) => s.follow);
+  const unfollow = useFollows((s) => s.unfollow);
+  const [pending, setPending] = useState(false);
+
+  const profile = profiles.get(followerPubkey);
+  const name = profile?.display_name || profile?.name || npubEncode(followerPubkey).slice(0, 16) + "…";
+  const isFollowing = follows.includes(followerPubkey);
+  const ownPubkey = getNsecPubkey();
+  const isSelfRow = ownPubkey === followerPubkey;
+
+  async function toggleFollow() {
+    setPending(true);
+    try {
+      if (isFollowing) await unfollow(pool, followerPubkey);
+      else await follow(pool, followerPubkey);
+    } catch (e) {
+      console.error("[FollowerRow]", e);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <li className="flex items-center justify-between gap-3 py-2.5 px-1">
+      <button
+        type="button"
+        onClick={() => onOpenProfile(followerPubkey)}
+        className="flex items-center gap-3 min-w-0 hover:opacity-70 transition-opacity text-left"
+      >
+        <Avatar pubkey={followerPubkey} picture={profile?.picture} size={32} />
+        <span className="text-sm font-[family-name:var(--font-inter)] truncate">{name}</span>
+      </button>
+      {!isSelfRow && (
+        <button
+          onClick={toggleFollow}
+          disabled={pending}
+          className={`text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] shrink-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+            isFollowing
+              ? "bg-white text-[#2d2d2d] border border-[#2d2d2d] hover:bg-[#f0f0ee]"
+              : "bg-black text-white hover:bg-[#2d2d2d]"
+          }`}
+        >
+          {pending ? "…" : isFollowing ? "Unfollow" : "Follow"}
+        </button>
+      )}
+    </li>
+  );
+}
+
 export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
   const { pool } = useNostrContext();
   const relays = useRelays((s) => s.relays);
@@ -125,6 +178,31 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
   const bannerUpload = useNostrUpload();
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+
+  const [showFollowers, setShowFollowers] = useState(false);
+  const [followerPubkeys, setFollowerPubkeys] = useState<string[]>([]);
+  const [loadingFollowers, setLoadingFollowers] = useState(false);
+  const [openedFollowerPubkey, setOpenedFollowerPubkey] = useState<string | null>(null);
+
+  function openFollowers() {
+    setShowFollowers(true);
+    setLoadingFollowers(true);
+    setFollowerPubkeys([]);
+    const seen = new Set<string>();
+    const sub = pool.subscribeMany(relays, [{ kinds: [3], "#p": [pubkey] }], {
+      onevent(event) {
+        if (!seen.has(event.pubkey)) {
+          seen.add(event.pubkey);
+          setFollowerPubkeys((prev) => [...prev, event.pubkey]);
+        }
+      },
+      oneose() {
+        setLoadingFollowers(false);
+        sub.close();
+        if (seen.size > 0) fetchProfiles(pool, [...seen]);
+      },
+    });
+  }
 
   useEffect(() => {
     fetchProfiles(pool, [pubkey]);
@@ -202,6 +280,13 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
 
   return (
     <>
+    {openedFollowerPubkey && createPortal(
+      <ProfileModal
+        pubkey={openedFollowerPubkey}
+        onClose={() => setOpenedFollowerPubkey(null)}
+      />,
+      document.body
+    )}
     {photoOpen && profile?.picture && createPortal(
       <div
         className="fixed inset-0 bg-black/80 flex items-center justify-center z-[70]"
@@ -224,7 +309,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
         onWheel={(e) => e.stopPropagation()}
       >
 
-        {editing ? null : (
+        {!showFollowers && !editing && (
           /* ── Profile view panel ── */
           <div className="flex flex-col h-full">
             {/* Banner */}
@@ -253,12 +338,20 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
                   </div>
                 </div>
                 {isSelf && (
-                  <button
-                    onClick={openEdit}
-                    className="text-xs px-3 py-1.5 rounded border border-[#2d2d2d] bg-white text-[#2d2d2d] font-[family-name:var(--font-inter)] hover:bg-[#f0f0ee] transition-colors shrink-0 ml-4"
-                  >
-                    Edit profile
-                  </button>
+                  <div className="flex items-center gap-2 shrink-0 ml-4">
+                    <button
+                      onClick={openFollowers}
+                      className="text-xs px-3 py-1.5 rounded border border-[#2d2d2d] bg-white text-[#2d2d2d] font-[family-name:var(--font-inter)] hover:bg-[#f0f0ee] transition-colors"
+                    >
+                      Followers
+                    </button>
+                    <button
+                      onClick={openEdit}
+                      className="text-xs px-3 py-1.5 rounded border border-[#2d2d2d] bg-white text-[#2d2d2d] font-[family-name:var(--font-inter)] hover:bg-[#f0f0ee] transition-colors"
+                    >
+                      Edit profile
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -305,7 +398,49 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
           </div>
         )}
 
-        {editing && (
+        {showFollowers && (
+          /* ── Followers panel ── */
+          <div className="flex flex-col h-full">
+            <div className="flex items-center gap-3 px-8 pt-7 pb-4 shrink-0">
+              <button
+                onClick={() => setShowFollowers(false)}
+                className="text-[#2d2d2d]/40 hover:text-[#2d2d2d] transition-colors"
+                aria-label="Back"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 12H5M12 5l-7 7 7 7"/>
+                </svg>
+              </button>
+              <h3 className="text-sm font-semibold font-[family-name:var(--font-inter)]">Followers</h3>
+            </div>
+            <div className="h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent mx-8 shrink-0" />
+            <div className="flex-1 overflow-y-auto px-7" onWheel={(e) => e.stopPropagation()}>
+              {loadingFollowers && followerPubkeys.length === 0 && (
+                <p className="text-sm text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] py-6 text-center">Loading…</p>
+              )}
+              {!loadingFollowers && followerPubkeys.length === 0 && (
+                <p className="text-sm text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] py-6 text-center">No followers yet.</p>
+              )}
+              {followerPubkeys.length > 0 && (
+                <ul className="divide-y divide-[#2d2d2d]/10">
+                  {followerPubkeys.map((pk) => (
+                    <FollowerRow key={pk} followerPubkey={pk} onOpenProfile={setOpenedFollowerPubkey} />
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="flex justify-end px-8 py-4 shrink-0">
+              <button
+                onClick={() => setShowFollowers(false)}
+                className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!showFollowers && editing && (
           /* ── Edit panel ── */
           <div className="flex flex-col h-full">
             {/* Banner upload */}
