@@ -10,6 +10,8 @@ import ProfileFeed from "@/app/components/ui/ProfileFeed";
 import Avatar from "@/app/components/ui/Avatar";
 import { ProfileContext } from "@/app/context/ProfileContext";
 import { HashtagContext } from "@/app/context/HashtagContext";
+import { useFollowedHashtags } from "@/app/hooks/useFollowedHashtags";
+import { getNsecPubkey } from "@/app/hooks/useFollows";
 import { npubEncode } from "nostr-tools/nip19";
 
 interface Props {
@@ -135,6 +137,12 @@ export default function HashtagModal({ tag, onClose }: Props) {
   const currentTag = current.type === "hashtag" ? current.tag : (history.findLast((e) => e.type === "hashtag") as { type: "hashtag"; tag: string } | undefined)?.tag ?? tag;
   const profilePubkey = current.type === "profile" ? current.pubkey : null;
 
+  const isLoggedIn = getNsecPubkey() !== null;
+  const followedHashtags = useFollowedHashtags((s) => s.followedHashtags);
+  const followHashtag = useFollowedHashtags((s) => s.followHashtag);
+  const unfollowHashtag = useFollowedHashtags((s) => s.unfollowHashtag);
+  const isFollowingTag = followedHashtags.includes(currentTag.toLowerCase());
+
   return (
     <ProfileContext.Provider value={{ openProfile }}>
     <HashtagContext.Provider value={{ openHashtag }}>
@@ -170,6 +178,18 @@ export default function HashtagModal({ tag, onClose }: Props) {
                       className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
                     >
                       ← Back
+                    </button>
+                  )}
+                  {isLoggedIn && (
+                    <button
+                      onClick={() => isFollowingTag ? unfollowHashtag(currentTag) : followHashtag(currentTag)}
+                      className={`text-sm px-4 py-2 rounded font-[family-name:var(--font-inter)] transition-colors ${
+                        isFollowingTag
+                          ? "bg-white text-[#2d2d2d] border border-[#2d2d2d] hover:bg-[#f0f0ee]"
+                          : "bg-black text-white hover:bg-[#2d2d2d]"
+                      }`}
+                    >
+                      {isFollowingTag ? "Unfollow Feed" : "Follow Feed"}
                     </button>
                   )}
                   <button

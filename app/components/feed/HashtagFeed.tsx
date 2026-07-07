@@ -13,7 +13,7 @@ import type { Event } from "nostr-tools";
 
 const BATCH = 50;
 
-export default function HashtagFeed({ tag }: { tag: string }) {
+export default function HashtagFeed({ tag, scrollable = true }: { tag: string; scrollable?: boolean }) {
   const { pool } = useNostrContext();
   const relays = useRelays((s) => s.relays);
   const follows = useFollows((s) => s.follows);
@@ -149,9 +149,9 @@ export default function HashtagFeed({ tag }: { tag: string }) {
   }, [loading, loadingMore, hasMore, loadMore]);
 
   return (
-    <div className="relative h-full">
+    <div className={scrollable ? "relative h-full" : "relative"}>
       {loading && (
-        <div className="absolute inset-0 flex items-start justify-center pt-8 pointer-events-none z-0">
+        <div className={scrollable ? "absolute inset-0 flex items-start justify-center pt-8 pointer-events-none z-0" : "flex justify-center pt-8"}>
           <div className="w-6 h-6 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
         </div>
       )}
@@ -160,7 +160,7 @@ export default function HashtagFeed({ tag }: { tag: string }) {
           No posts found for #{tag}.
         </p>
       )}
-      <ul ref={feedRef} className="overflow-y-auto h-full pr-2 bg-[#f9f9f7]">
+      <ul ref={feedRef} className={scrollable ? "overflow-y-auto h-full pr-2 bg-[#f9f9f7]" : "pr-2"}>
         {posts.map((event) => (
           <li key={event.id} className="relative z-10 leading-relaxed bg-[#f9f9f7] pt-6 first:pt-0">
             <div className="flex items-center justify-between gap-4 mb-2">

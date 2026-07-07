@@ -7,6 +7,7 @@ import { useFollows, getNsecPubkey } from "@/app/hooks/useFollows";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useMissionControl } from "@/app/hooks/useMissionControl";
 import { useRelays } from "@/app/hooks/useRelays";
+import { useFollowedHashtags } from "@/app/hooks/useFollowedHashtags";
 import RelaySettings from "@/app/components/settings/RelaySettings";
 import Avatar from "@/app/components/ui/Avatar";
 import ProfileModal from "@/app/components/ui/ProfileModal";
@@ -19,6 +20,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const loadFollows = useFollows((s) => s.loadFollows);
   const { activeView, setView, hasPendingMentions } = useMissionControl();
   const initRelays = useRelays((s) => s.initRelays);
+  const initFollowedHashtags = useFollowedHashtags((s) => s.initFollowedHashtags);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -36,6 +38,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const myProfile = myPubkey ? profiles.get(myPubkey) : undefined;
 
   useEffect(() => { initRelays(); }, [initRelays]);
+  useEffect(() => { initFollowedHashtags(); }, [initFollowedHashtags]);
 
   useEffect(() => {
     if (!unlocked) return;
@@ -92,6 +95,16 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           }`}
         >
           control
+        </button>
+        <button
+          onClick={() => { setView("hashtag-feeds"); closeSearch(); }}
+          title="Feeds"
+          style={{ writingMode: "vertical-rl", letterSpacing: "0.12em" }}
+          className={`text-[10px] uppercase font-[family-name:var(--font-inter)] select-none p-2 ${
+            activeView === "hashtag-feeds" ? "opacity-100" : "opacity-25 hover:opacity-60 transition-opacity"
+          }`}
+        >
+          feeds
         </button>
 
         <button

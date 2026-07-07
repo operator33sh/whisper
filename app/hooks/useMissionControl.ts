@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 
-type View = "feed" | "mission-control";
+type View = "feed" | "mission-control" | "hashtag-feeds";
 
 interface MissionControlStore {
   activeView: View;
