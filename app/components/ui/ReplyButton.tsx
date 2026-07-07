@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useRelays } from "@/app/hooks/useRelays";
 import { useOptimisticReplyCounts } from "@/app/hooks/useOptimisticReplyCounts";
@@ -159,8 +160,8 @@ export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props
         Reply
       </button>
 
-      {open && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      {open && createPortal(
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200]">
           <div className="bg-[#f9f9f7] rounded-lg p-8 w-full max-w-md flex flex-col gap-4">
             <h2 className="text-xl font-semibold">Reply</h2>
             <div className="relative">
@@ -246,7 +247,7 @@ export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
     </>
   );
 }
