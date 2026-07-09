@@ -129,12 +129,12 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       <div className="ml-12 flex-1 flex flex-col min-w-0">
         <div className="h-full flex flex-col px-6 w-[928px] mx-auto">
           <header className="flex items-center justify-between py-8 shrink-0">
-            <div className="flex items-end gap-4">
-              <h1 className="text-4xl font-bold tracking-tight">Whisper</h1>
-              {activeView === "feed" && !searchOpen && <NewPostButton />}
+            <div className="flex items-center gap-4">
+              <h1><img src="/whisper-logo.svg" alt="Whisper" className="h-14" /></h1>
+              {activeView === "feed" && !searchOpen && <div className="-mt-1 -ml-2"><NewPostButton /></div>}
 
               {/* Magnifying glass + sliding search bar */}
-              <div className="flex items-center gap-2 mb-px">
+              <div className="flex items-center gap-2 -mt-1">
                 <button
                   onClick={() => searchOpen ? closeSearch() : setSearchOpen(true)}
                   title="Search"
