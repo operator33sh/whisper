@@ -74,11 +74,13 @@ export default function PostReplies({ eventId, count, replyCounts, rootEventId }
   const optimistic = useOptimisticReplyCounts((s) => s.increments.get(eventId) ?? 0);
   const displayCount = count + optimistic;
   const [expanded, setExpanded] = useState(false);
+  const [fetchKey, setFetchKey] = useState(0);
   const [replies, setReplies] = useState<Event[]>([]);
 
   useEffect(() => {
     if (!expanded) return;
 
+    setReplies([]);
     const filter: Filter = { kinds: [1], "#e": [eventId], limit: 50 };
     const sub = pool.subscribeMany(relays, [filter], {
       onevent(event: Event) {
@@ -94,12 +96,20 @@ export default function PostReplies({ eventId, count, replyCounts, rootEventId }
     });
 
     return () => sub.close();
-  }, [expanded, eventId, pool]);
+  }, [expanded, fetchKey, eventId, pool]);
 
   return (
     <div className="mt-2">
       <button
-        onClick={() => displayCount > 0 && setExpanded((v) => !v)}
+        onClick={() => {
+          if (displayCount === 0) return;
+          if (expanded) {
+            setExpanded(false);
+          } else {
+            setFetchKey((k) => k + 1);
+            setExpanded(true);
+          }
+        }}
         disabled={displayCount === 0}
         className="flex items-center gap-1 text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)] disabled:cursor-default enabled:hover:text-[#2d2d2d] enabled:transition-colors"
       >
