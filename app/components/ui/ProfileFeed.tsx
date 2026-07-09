@@ -108,10 +108,10 @@ export default function ProfileFeed({ pubkey }: Props) {
       )}
       <ul className="overflow-y-auto h-full pr-2">
         {events.map((event) => (
-          <li key={event.id} className="leading-relaxed pt-6 first:pt-0">
+          <li key={event.id} className="group/post leading-relaxed pt-6 first:pt-0">
             <PostBody
               content={event.content}
-              timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
+              timestamp={timeAgo(event.created_at)}
               action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} />}
             />
             <PostReplies eventId={event.id} count={replyCounts.get(event.id) ?? 0} replyCounts={replyCounts} />

@@ -76,14 +76,14 @@ export default function ReflectionLog({ pubkey }: Props) {
                 <div className="pl-4 border-l-2 border-line-strong">
                   <PostBody
                     content={event.content}
-                    timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
+                    timestamp={timeAgo(event.created_at)}
                   />
                 </div>
               </>
             ) : (
               <PostBody
                 content={event.content}
-                timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
+                timestamp={timeAgo(event.created_at)}
               />
             )}
             <div className="mt-8 h-px bg-line" />

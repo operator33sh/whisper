@@ -72,7 +72,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="h-screen flex">
       {/* Left navigation rail */}
-      <aside className="fixed left-0 top-0 h-screen w-16 bg-transparent border-r-[0.5px] border-line flex flex-col items-center pt-6 gap-7 z-20">
+      <aside className="fixed left-0 top-0 h-screen w-16 bg-transparent border-r-[0.5px] border-line flex flex-col items-center pt-10 gap-7 z-20">
         <button
           onClick={() => { setView("feed"); closeSearch(); }}
           title="Whisper"

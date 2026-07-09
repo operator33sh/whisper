@@ -32,7 +32,7 @@ function getRootEventId(event: Event): string | null {
 }
 
 function timestamp(event: Event): string {
-  return `${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`;
+  return timeAgo(event.created_at);
 }
 
 export default function ResonanceItem({ event }: Props) {
@@ -54,7 +54,7 @@ export default function ResonanceItem({ event }: Props) {
 
 
   return (
-    <li className="flex flex-col gap-3 leading-relaxed pt-8 first:pt-0">
+    <li className="group/post flex flex-col gap-3 leading-relaxed pt-8 first:pt-0">
       {/* Parent: the message directly replied to */}
       {hasParent && (
         <div>
