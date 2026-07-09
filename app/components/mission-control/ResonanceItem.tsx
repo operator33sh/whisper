@@ -43,12 +43,24 @@ export default function ResonanceItem({ event }: Props) {
   const parentId = getParentEventId(event);
   const rootId = getRootEventId(event);
 
-  useEffect(() => {
-    if (!parentId || parentId === event.id) return;
-    fetchEvents(pool, [parentId]);
-  }, [parentId, event.id, pool, fetchEvents]);
-
   const parentEvent = parentId && parentId !== event.id ? (storedEvents.get(parentId) ?? null) : null;
+
+  useEffect(() => {
+    if (!parentId || parentId === event.id || parentEvent) return;
+    // Retry a few times while the parent is missing (failed fetches never
+    // update the store, so deps alone would never re-trigger this effect);
+    // the store's `fetching` set dedupes in-flight requests
+    fetchEvents(pool, [parentId]);
+    let attempts = 0;
+    const timer = setInterval(() => {
+      if (++attempts > 3) {
+        clearInterval(timer);
+        return;
+      }
+      fetchEvents(pool, [parentId]);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [parentId, event.id, parentEvent, pool, fetchEvents]);
 
   const hasParent = parentEvent && parentEvent.id !== event.id;
 

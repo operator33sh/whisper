@@ -25,11 +25,23 @@ function RootPreview({ rootId }: { rootId: string }) {
   const fetchEvents = useEvents((s) => s.fetchEvents);
   const storedEvents = useEvents((s) => s.events);
 
-  useEffect(() => {
-    fetchEvents(pool, [rootId]);
-  }, [rootId, pool, fetchEvents]);
-
   const root = storedEvents.get(rootId) ?? null;
+
+  useEffect(() => {
+    if (root) return;
+    // Retry a few times while the root is missing (see ResonanceItem);
+    // the store's `fetching` set dedupes in-flight requests
+    fetchEvents(pool, [rootId]);
+    let attempts = 0;
+    const timer = setInterval(() => {
+      if (++attempts > 3) {
+        clearInterval(timer);
+        return;
+      }
+      fetchEvents(pool, [rootId]);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [rootId, root, pool, fetchEvents]);
   if (!root) return null;
 
   return (

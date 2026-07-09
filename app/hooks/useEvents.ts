@@ -18,33 +18,46 @@ let storeSet: ((fn: (s: EventStore) => Partial<EventStore>) => void) | null = nu
 
 function flushBatch() {
   batchTimer = null;
+  if (pendingIds.length === 0 || !batchPool || !storeSet) return;
+
+  // Relays not loaded yet: retry the flush instead of sending an empty REQ
+  const relays = useRelays.getState().relays;
+  if (relays.length === 0) {
+    batchTimer = setTimeout(flushBatch, 500);
+    return;
+  }
+
   const toFetch = pendingIds.splice(0);
   const pool = batchPool;
   batchPool = null;
-  if (toFetch.length === 0 || !pool || !storeSet) return;
 
   const set = storeSet;
-  const sub = pool.subscribeMany(
-    useRelays.getState().relays,
-    [{ ids: toFetch, kinds: [1] }],
-    {
-      onevent(event: Event) {
-        set((s) => {
-          const next = new Map(s.events);
-          next.set(event.id, event);
-          return { events: next };
-        });
-      },
-      oneose() {
-        set((s) => {
-          const next = new Set(s.fetching);
-          toFetch.forEach((id) => next.delete(id));
-          return { fetching: next };
-        });
-        sub.close();
-      },
-    }
-  );
+  let done = false;
+  function finish() {
+    if (done) return;
+    done = true;
+    set((s) => {
+      const next = new Set(s.fetching);
+      toFetch.forEach((id) => next.delete(id));
+      return { fetching: next };
+    });
+    sub.close();
+  }
+
+  const sub = pool.subscribeMany(relays, [{ ids: toFetch, kinds: [1] }], {
+    onevent(event: Event) {
+      set((s) => {
+        const next = new Map(s.events);
+        next.set(event.id, event);
+        return { events: next };
+      });
+    },
+    oneose: finish,
+  });
+
+  // Safety net: a dead relay never EOSEs, which would leave ids stuck in
+  // `fetching` forever and block all future retries
+  setTimeout(finish, 8000);
 }
 
 export const useEvents = create<EventStore>((set, get) => {
