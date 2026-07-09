@@ -48,10 +48,10 @@ export default function RelaySettings({ onClose }: Props) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[#f9f9f7] rounded-lg p-8 w-full max-w-md flex flex-col gap-6">
+      <div className="bg-bg rounded-lg p-8 w-full max-w-md flex flex-col gap-6">
         <div>
           <h2 className="text-xl font-semibold">Relays</h2>
-          <p className="mt-1 text-xs text-[#2d2d2d]/40 font-[family-name:var(--font-inter)]">
+          <p className="mt-1 text-xs text-ink-faint font-[family-name:var(--font-inter)]">
             {connectedCount} of {relays.length} connected
           </p>
         </div>
@@ -63,14 +63,14 @@ export default function RelaySettings({ onClose }: Props) {
               <li key={relay} className="flex items-center gap-3">
                 <span
                   title={isConnected ? "Connected" : "Not connected"}
-                  className={`shrink-0 w-1.5 h-1.5 rounded-full transition-colors ${isConnected ? "bg-green-500" : "bg-[#2d2d2d]/20"}`}
+                  className={`shrink-0 w-1.5 h-1.5 rounded-full transition-colors ${isConnected ? "bg-green-500" : "bg-ink/20"}`}
                 />
-                <span className="flex-1 text-sm font-[family-name:var(--font-inter)] text-[#2d2d2d]/80 truncate">
+                <span className="flex-1 text-sm font-[family-name:var(--font-inter)] text-ink/80 truncate">
                   {relay}
                 </span>
                 <button
                   onClick={() => removeRelay(relay)}
-                  className="shrink-0 text-xs text-[#2d2d2d]/40 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)]"
+                  className="shrink-0 text-xs text-ink-faint hover:text-ink transition-colors font-[family-name:var(--font-inter)]"
                 >
                   Remove
                 </button>
@@ -86,11 +86,11 @@ export default function RelaySettings({ onClose }: Props) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             placeholder="wss://relay.example.com"
-            className="flex-1 border border-[#2d2d2d]/30 rounded px-3 py-2 text-sm font-[family-name:var(--font-inter)] bg-white focus:outline-none focus:border-[#2d2d2d]"
+            className="flex-1 border border-line-strong rounded px-3 py-2 text-sm font-[family-name:var(--font-inter)] bg-surface focus:outline-none focus:border-ink"
           />
           <button
             onClick={handleAdd}
-            className="bg-black text-white text-sm px-4 py-2 rounded font-[family-name:var(--font-inter)] hover:bg-[#2d2d2d] transition-colors"
+            className="bg-ink text-bg text-sm px-4 py-2 rounded font-[family-name:var(--font-inter)] hover:opacity-90 transition-colors"
           >
             Add
           </button>
@@ -99,7 +99,7 @@ export default function RelaySettings({ onClose }: Props) {
         <div className="flex justify-end">
           <button
             onClick={onClose}
-            className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
+            className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-ink-soft hover:text-ink transition-colors"
           >
             Close
           </button>

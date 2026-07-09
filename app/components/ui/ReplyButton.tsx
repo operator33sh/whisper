@@ -155,14 +155,14 @@ export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props
     <>
       <button
         onClick={() => setOpen(true)}
-        className="text-sm text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)]"
+        className="text-sm text-ink-soft hover:text-ink transition-colors font-[family-name:var(--font-inter)]"
       >
         Reply
       </button>
 
       {open && createPortal(
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200]">
-          <div className="bg-[#f9f9f7] rounded-lg p-8 w-full max-w-md flex flex-col gap-4">
+          <div className="bg-bg rounded-lg p-8 w-full max-w-md flex flex-col gap-4">
             <h2 className="text-xl font-semibold">Reply</h2>
             <div className="relative">
               <textarea
@@ -172,12 +172,12 @@ export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Write your reply…"
                 rows={4}
-                className="w-full border border-[#2d2d2d]/30 rounded px-4 py-2 text-sm font-[family-name:var(--font-inter)] bg-white focus:outline-none focus:border-[#2d2d2d] resize-none"
+                className="w-full border border-line-strong rounded px-4 py-2 text-sm font-[family-name:var(--font-inter)] bg-surface focus:outline-none focus:border-ink resize-none"
               />
               <button
                 type="button"
                 onClick={() => setEmojiOpen((v) => !v)}
-                className="absolute bottom-2 right-9 text-[#2d2d2d]/40 hover:text-[#2d2d2d] transition-colors"
+                className="absolute bottom-2 right-9 text-ink-faint hover:text-ink transition-colors"
                 aria-label="Insert emoji"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -191,7 +191,7 @@ export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadProgress !== null}
-                className="absolute bottom-2 right-2 text-[#2d2d2d]/40 hover:text-[#2d2d2d] transition-colors disabled:opacity-30"
+                className="absolute bottom-2 right-2 text-ink-faint hover:text-ink transition-colors disabled:opacity-30"
                 aria-label="Attach file"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -213,13 +213,13 @@ export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props
             </div>
             {uploadProgress !== null && (
               <div className="flex flex-col gap-1">
-                <div className="h-0.5 w-full bg-[#2d2d2d]/10 rounded-full overflow-hidden">
+                <div className="h-0.5 w-full bg-ink/10 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#2d2d2d] transition-all duration-150"
+                    className="h-full bg-ink transition-all duration-150"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
-                <span className="text-xs text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">
+                <span className="text-xs text-ink-soft font-[family-name:var(--font-inter)]">
                   Uploading… {uploadProgress}%
                 </span>
               </div>
@@ -233,14 +233,14 @@ export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => { setOpen(false); setError(null); setUploadError(null); setUploadProgress(null); }}
-                className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
+                className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-ink-soft hover:text-ink transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={submit}
                 disabled={sending || !text.trim() || uploadProgress !== null}
-                className="bg-black text-white text-sm px-4 py-2 rounded font-[family-name:var(--font-inter)] hover:bg-[#2d2d2d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-ink text-bg text-sm px-4 py-2 rounded font-[family-name:var(--font-inter)] hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {sending ? "Sending…" : "Whisper"}
               </button>

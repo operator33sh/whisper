@@ -43,7 +43,7 @@ export default function UserMeta({ pubkey, size = 32 }: Props) {
         className="flex items-center gap-2 min-w-0 hover:opacity-70 transition-opacity"
       >
         <Avatar pubkey={pubkey} picture={profile?.picture} size={size} />
-        <span className="text-sm text-[#2d2d2d]/60 truncate font-[family-name:var(--font-inter)]">
+        <span className="text-sm text-ink-soft truncate font-[family-name:var(--font-inter)]">
           {name}
         </span>
       </button>

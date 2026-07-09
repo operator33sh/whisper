@@ -103,7 +103,7 @@ export default function ProfileFeed({ pubkey }: Props) {
     <div className="relative h-[400px]">
       {loading && events.length === 0 && (
         <div className="absolute inset-0 flex items-start justify-center pt-8 pointer-events-none">
-          <div className="w-5 h-5 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
+          <div className="w-5 h-5 rounded-full border-2 border-line-strong border-t-ink animate-spin" />
         </div>
       )}
       <ul className="overflow-y-auto h-full pr-2">
@@ -115,7 +115,7 @@ export default function ProfileFeed({ pubkey }: Props) {
               action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} />}
             />
             <PostReplies eventId={event.id} count={replyCounts.get(event.id) ?? 0} replyCounts={replyCounts} />
-            <div className="mt-6 h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
+            <div className="mt-6 h-px bg-line" />
           </li>
         ))}
         <li>

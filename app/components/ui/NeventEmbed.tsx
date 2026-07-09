@@ -47,14 +47,14 @@ export default function NeventEmbed({ raw }: { raw: string }) {
     return () => sub.close();
   }, [eventId]);
 
-  if (!eventId) return <span className="text-[#2d2d2d]/40 text-sm">{raw}</span>;
-  if (failed) return <span className="text-[#2d2d2d]/40 text-sm italic">quoted post not found</span>;
-  if (!event) return <span className="text-[#2d2d2d]/40 text-sm italic">loading…</span>;
+  if (!eventId) return <span className="text-ink-faint text-sm">{raw}</span>;
+  if (failed) return <span className="text-ink-faint text-sm italic">quoted post not found</span>;
+  if (!event) return <span className="text-ink-faint text-sm italic">loading…</span>;
 
   const hasMedia = /https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|avif|mp4|webm|mov|ogg)(?:\?\S*)?/i.test(event.content);
 
   return (
-    <blockquote className="border border-[#2d2d2d]/15 rounded px-3 pt-2 pb-3 my-1 text-sm text-[#2d2d2d]/75 bg-[#2d2d2d]/[0.02]">
+    <blockquote className="border border-line-strong/15 rounded px-3 pt-2 pb-3 my-1 text-sm text-ink/75 bg-ink/[0.02]">
       <div className="mb-1">
         <UserMeta pubkey={event.pubkey} />
       </div>

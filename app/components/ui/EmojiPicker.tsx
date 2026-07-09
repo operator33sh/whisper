@@ -62,12 +62,12 @@ export default function EmojiPicker({ onSelect, onClose }: Props) {
   return (
     <div
       ref={ref}
-      className="w-64 max-h-72 overflow-y-auto bg-white border border-[#2d2d2d]/20 rounded-lg shadow-lg p-2"
+      className="w-64 max-h-72 overflow-y-auto bg-surface border border-line-strong rounded-lg shadow-lg p-2"
       onWheel={(e) => e.stopPropagation()}
     >
       {CATEGORIES.map(({ label, emojis }) => (
         <div key={label} className="mb-2">
-          <p className="text-[10px] uppercase tracking-widest text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] mb-1 px-1">
+          <p className="text-[10px] uppercase tracking-widest text-ink-faint font-[family-name:var(--font-inter)] mb-1 px-1">
             {label}
           </p>
           <div className="flex flex-wrap">
@@ -76,7 +76,7 @@ export default function EmojiPicker({ onSelect, onClose }: Props) {
                 key={emoji}
                 type="button"
                 onClick={() => { onSelect(emoji); onClose(); }}
-                className="text-xl hover:bg-[#2d2d2d]/10 rounded p-0.5 transition-colors leading-none"
+                className="text-xl hover:opacity-90/10 rounded p-0.5 transition-colors leading-none"
               >
                 {emoji}
               </button>

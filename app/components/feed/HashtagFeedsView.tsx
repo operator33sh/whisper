@@ -38,7 +38,7 @@ export default function HashtagFeedsView() {
   if (followedHashtags.length === 0) {
     return (
       <div className="h-full flex items-center justify-center">
-        <p className="text-sm text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] text-center max-w-xs">
+        <p className="text-sm text-ink-faint font-[family-name:var(--font-inter)] text-center max-w-xs">
           No followed feeds yet. Click a hashtag in any post and press &ldquo;Follow Feed&rdquo;.
         </p>
       </div>
@@ -49,8 +49,8 @@ export default function HashtagFeedsView() {
     <div className="grid grid-cols-2 gap-12 h-full">
       <section ref={leftRef} className="flex flex-col overflow-y-auto pr-2">
         <header className="shrink-0 mb-4">
-          <h2 className="text-xs uppercase tracking-widest text-[#2d2d2d]/40 font-[family-name:var(--font-inter)]">Hashtag Feed</h2>
-          <p className="mt-1 text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">
+          <h2 className="text-xs uppercase tracking-widest text-ink-faint font-[family-name:var(--font-inter)]">Hashtag Feed</h2>
+          <p className="mt-1 text-sm text-ink-soft font-[family-name:var(--font-inter)]">
             {slotA ? `#${slotA}` : "No feed selected"}
           </p>
           <div className="mt-3">
@@ -61,7 +61,7 @@ export default function HashtagFeedsView() {
                 setSlotA(v);
                 try { v ? localStorage.setItem("whisper:hashtag-feed-slot-a", v) : localStorage.removeItem("whisper:hashtag-feed-slot-a"); } catch {}
               }}
-              className="border border-[#2d2d2d]/30 rounded px-3 py-1.5 text-sm font-[family-name:var(--font-inter)] bg-white focus:outline-none focus:border-[#2d2d2d] w-full appearance-none cursor-pointer"
+              className="border border-line-strong rounded px-3 py-1.5 text-sm font-[family-name:var(--font-inter)] bg-surface text-ink focus:outline-none focus:border-ink w-full appearance-none cursor-pointer"
             >
               <option value="">— Select a feed —</option>
               {availableForA.map((tag) => (
@@ -70,11 +70,11 @@ export default function HashtagFeedsView() {
             </select>
           </div>
         </header>
-        <div className="h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent shrink-0 mb-4" />
+        <div className="h-px bg-line shrink-0 mb-4" />
         {slotA ? (
           <HashtagFeed key={slotA} tag={slotA} scrollable={false} />
         ) : (
-          <p className="text-sm text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] pt-4">
+          <p className="text-sm text-ink-faint font-[family-name:var(--font-inter)] pt-4">
             Select a hashtag above to load the feed.
           </p>
         )}
@@ -82,8 +82,8 @@ export default function HashtagFeedsView() {
 
       <section ref={rightRef} className="flex flex-col overflow-y-auto pr-2">
         <header className="shrink-0 mb-4">
-          <h2 className="text-xs uppercase tracking-widest text-[#2d2d2d]/40 font-[family-name:var(--font-inter)]">Hashtag Feed</h2>
-          <p className="mt-1 text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">
+          <h2 className="text-xs uppercase tracking-widest text-ink-faint font-[family-name:var(--font-inter)]">Hashtag Feed</h2>
+          <p className="mt-1 text-sm text-ink-soft font-[family-name:var(--font-inter)]">
             {slotB ? `#${slotB}` : "No feed selected"}
           </p>
           <div className="mt-3">
@@ -94,7 +94,7 @@ export default function HashtagFeedsView() {
                 setSlotB(v);
                 try { v ? localStorage.setItem("whisper:hashtag-feed-slot-b", v) : localStorage.removeItem("whisper:hashtag-feed-slot-b"); } catch {}
               }}
-              className="border border-[#2d2d2d]/30 rounded px-3 py-1.5 text-sm font-[family-name:var(--font-inter)] bg-white focus:outline-none focus:border-[#2d2d2d] w-full appearance-none cursor-pointer"
+              className="border border-line-strong rounded px-3 py-1.5 text-sm font-[family-name:var(--font-inter)] bg-surface text-ink focus:outline-none focus:border-ink w-full appearance-none cursor-pointer"
             >
               <option value="">— Select a feed —</option>
               {availableForB.map((tag) => (
@@ -103,11 +103,11 @@ export default function HashtagFeedsView() {
             </select>
           </div>
         </header>
-        <div className="h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent shrink-0 mb-4" />
+        <div className="h-px bg-line shrink-0 mb-4" />
         {slotB ? (
           <HashtagFeed key={slotB} tag={slotB} scrollable={false} />
         ) : (
-          <p className="text-sm text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] pt-4">
+          <p className="text-sm text-ink-faint font-[family-name:var(--font-inter)] pt-4">
             Select a hashtag above to load the feed.
           </p>
         )}

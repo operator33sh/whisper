@@ -12,6 +12,7 @@ import RelaySettings from "@/app/components/settings/RelaySettings";
 import Avatar from "@/app/components/ui/Avatar";
 import ProfileModal from "@/app/components/ui/ProfileModal";
 import SearchResults from "@/app/components/ui/SearchResults";
+import ThemeToggle from "@/app/components/ui/ThemeToggle";
 import { useProfiles } from "@/app/hooks/useProfiles";
 
 export default function Shell({ children }: { children: React.ReactNode }) {
@@ -71,49 +72,69 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="h-screen flex">
       {/* Left navigation rail */}
-      <aside className="fixed left-0 top-0 h-screen w-12 bg-[#f9f9f7]/90 backdrop-blur-sm border-r border-[#2d2d2d]/10 flex flex-col items-center pt-8 gap-8 z-20">
+      <aside className="fixed left-0 top-0 h-screen w-16 bg-transparent border-r-[0.5px] border-line flex flex-col items-center pt-6 gap-7 z-20">
         <button
           onClick={() => { setView("feed"); closeSearch(); }}
           title="Whisper"
-          style={{ fontFamily: "var(--font-crimson)" }}
-          className={`text-lg transition-opacity select-none p-2 ${
-            activeView === "feed" ? "opacity-100" : "opacity-25 hover:opacity-60"
+          className={`p-2 transition-colors select-none ${
+            activeView === "feed" ? "text-ink" : "text-ink-faint hover:text-ink"
           }`}
         >
-          W
+          <svg viewBox="0 0 96 96" width="30" height="30" role="img" aria-label="Whisper">
+            <path
+              d="M6 48 C 12 25, 20 25, 26 48 C 31 65, 38 65, 44 48 C 48 37, 54 37, 58 48 C 61 55, 66 55, 69 48 C 71 44.5, 74.5 44.5, 76.5 48 L 90 48"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
         <button
           onClick={() => { setView("mission-control"); closeSearch(); }}
           title="Mission Control"
-          style={{ writingMode: "vertical-rl", letterSpacing: "0.12em" }}
-          className={`text-[10px] uppercase font-[family-name:var(--font-inter)] select-none p-2 ${
+          className={`p-2 select-none ${
             activeView === "mission-control"
-              ? "opacity-100"
+              ? "text-ink"
               : hasPendingMentions
-              ? "animate-sacred-glow"
-              : "opacity-25 hover:opacity-60 transition-opacity"
+              ? "text-ink animate-sacred-glow-icon"
+              : "text-ink-faint hover:text-ink transition-colors"
           }`}
         >
-          control
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9" />
+            <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5" />
+            <circle cx="12" cy="12" r="2" />
+            <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5" />
+            <path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1" />
+          </svg>
         </button>
         <button
           onClick={() => { setView("hashtag-feeds"); closeSearch(); }}
           title="Feeds"
-          style={{ writingMode: "vertical-rl", letterSpacing: "0.12em" }}
-          className={`text-[10px] uppercase font-[family-name:var(--font-inter)] select-none p-2 ${
-            activeView === "hashtag-feeds" ? "opacity-100" : "opacity-25 hover:opacity-60 transition-opacity"
+          className={`p-2 select-none transition-colors ${
+            activeView === "hashtag-feeds" ? "text-ink" : "text-ink-faint hover:text-ink"
           }`}
         >
-          feeds
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="4" y1="9" x2="20" y2="9" />
+            <line x1="4" y1="15" x2="20" y2="15" />
+            <line x1="10" y1="3" x2="8" y2="21" />
+            <line x1="16" y1="3" x2="14" y2="21" />
+          </svg>
         </button>
 
-        <button
-          onClick={() => setSettingsOpen(true)}
-          title="Settings"
-          className="mt-auto p-2 text-base text-[#2d2d2d]/30 hover:text-[#2d2d2d] transition-colors select-none font-[family-name:var(--font-inter)]"
-        >
-          ⚙
-        </button>
+        <div className="mt-auto flex flex-col items-center">
+          <ThemeToggle />
+          <button
+            onClick={() => setSettingsOpen(true)}
+            title="Settings"
+            className="p-2 text-base text-ink-faint hover:text-ink transition-colors select-none font-[family-name:var(--font-inter)]"
+          >
+            ⚙
+          </button>
+        </div>
         {myPubkey && (
           <button
             onClick={() => setProfileOpen(true)}
@@ -126,11 +147,30 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main content */}
-      <div className="ml-12 flex-1 flex flex-col min-w-0">
+      <div className="ml-16 flex-1 flex flex-col min-w-0">
         <div className="h-full flex flex-col px-6 w-[928px] mx-auto">
           <header className="flex items-center justify-between py-8 shrink-0">
             <div className="flex items-center gap-4">
-              <h1><img src="/whisper-logo.svg" alt="Whisper" className="h-14" /></h1>
+              <h1 className="text-ink">
+                <svg viewBox="0 0 360 96" className="h-14 w-auto" role="img" aria-label="Whisper">
+                  <path
+                    d="M10 48 C 15.5 27, 22.5 27, 28 48 C 32.5 63, 39 63, 44 48 C 47.5 38, 53 38, 57 48 C 59.5 54, 64 54, 67 48 C 68.8 44.8, 71.8 44.8, 73.5 48 L 85 48"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <text
+                    x="106"
+                    y="62"
+                    fill="currentColor"
+                    style={{ fontFamily: "var(--font-crimson), Georgia, serif", fontWeight: 300, fontSize: "46px", letterSpacing: "0.05em" }}
+                  >
+                    Whisper
+                  </text>
+                </svg>
+              </h1>
               {activeView === "feed" && !searchOpen && <div className="-mt-1 -ml-2"><NewPostButton /></div>}
 
               {/* Magnifying glass + sliding search bar */}
@@ -138,7 +178,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                 <button
                   onClick={() => searchOpen ? closeSearch() : setSearchOpen(true)}
                   title="Search"
-                  className={`transition-colors ${searchOpen ? "text-[#2d2d2d]" : "text-[#2d2d2d]/30 hover:text-[#2d2d2d]"}`}
+                  className={`transition-colors ${searchOpen ? "text-ink" : "text-ink-faint hover:text-ink"}`}
                   aria-label="Search"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -157,14 +197,14 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search Nostr…"
-                    className="w-full bg-transparent text-sm font-[family-name:var(--font-inter)] text-[#2d2d2d] placeholder:text-[#2d2d2d]/30 outline-none border-b border-[#2d2d2d]/20 pb-0.5"
+                    className="w-full bg-transparent text-sm font-[family-name:var(--font-inter)] text-ink placeholder:text-ink-faint outline-none border-b border-line-strong pb-0.5"
                   />
                 </div>
 
                 {searchOpen && (
                   <button
                     onClick={closeSearch}
-                    className="text-[#2d2d2d]/30 hover:text-[#2d2d2d] transition-colors text-sm leading-none"
+                    className="text-ink-faint hover:text-ink transition-colors text-sm leading-none"
                     aria-label="Close search"
                   >
                     ✕
@@ -174,7 +214,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             </div>
             <button
               onClick={logout}
-              className="bg-black text-white text-xs px-3 py-1.5 rounded font-[family-name:var(--font-inter)] hover:bg-[#2d2d2d] transition-colors"
+              className="text-xs text-ink-faint hover:text-ink-soft transition-colors font-[family-name:var(--font-inter)]"
             >
               Logout
             </button>
@@ -195,12 +235,11 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       {settingsOpen && <RelaySettings onClose={() => setSettingsOpen(false)} />}
       {profileOpen && myPubkey && <ProfileModal pubkey={myPubkey} onClose={() => setProfileOpen(false)} isSelf />}
 
-      <footer className="fixed bottom-0 left-12 right-0 py-2 bg-[#f9f9f7] pointer-events-none">
-        <div className="w-[928px] mx-auto px-6 text-right">
-          <p className="text-[10px] text-[#2d2d2d] font-[family-name:var(--font-inter)]">
-            Email: <span className="pointer-events-auto">operator33.sh@proton.me</span>
+      <footer className="fixed bottom-0 left-16 right-0 py-2 bg-bg pointer-events-none">
+        <div className="w-[928px] mx-auto px-6 text-center">
+          <p className="text-[10px] text-ink-faint font-[family-name:var(--font-inter)]">
+            <span className="pointer-events-auto select-text">operator33.sh@proton.me</span>
             {" · "}
-            Support Whisper:{" "}
             <span className="pointer-events-auto select-text">bitcoincash:qq3u8k4afsw35rcrnkg6vaf20et57fsdd5n9r5g0py</span>
           </p>
         </div>

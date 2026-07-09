@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 96" role="img" aria-label="Whisper">
+  <title>Whisper</title>
+  <desc>Logo van Whisper: een golf die uitdooft in een vlakke lijn, gevolgd door de naam in Crimson Pro.</desc>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300&amp;display=swap');
+    .wordmark {
+      font-family: 'Crimson Pro', Georgia, serif;
+      font-weight: 300;
+      font-size: 46px;
+      letter-spacing: 0.05em;
+    }
+  </style>
+  <path d="M10 48
+           C 15.5 27, 22.5 27, 28 48
+           C 32.5 63, 39 63, 44 48
+           C 47.5 38, 53 38, 57 48
+           C 59.5 54, 64 54, 67 48
+           C 68.8 44.8, 71.8 44.8, 73.5 48
+           L 85 48"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.6"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  <text x="106" y="62" class="wordmark" fill="currentColor">Whisper</text>
+</svg>

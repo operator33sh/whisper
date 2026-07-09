@@ -50,11 +50,11 @@ function ProfilePanel({ pubkey, onBack, onClose }: { pubkey: string; onBack: () 
   return (
     <div className="flex flex-col h-full">
       {profile?.banner ? (
-        <div className="h-28 bg-[#e8e8e5] rounded-t-lg overflow-hidden shrink-0">
+        <div className="h-28 bg-line rounded-t-lg overflow-hidden shrink-0">
           <img src={profile.banner} alt="" className="w-full h-full object-cover" />
         </div>
       ) : (
-        <div className="h-28 bg-[#e8e8e5] rounded-t-lg shrink-0" />
+        <div className="h-28 bg-line rounded-t-lg shrink-0" />
       )}
 
       <div className="p-8 flex flex-col gap-4 flex-1 overflow-hidden">
@@ -62,14 +62,14 @@ function ProfilePanel({ pubkey, onBack, onClose }: { pubkey: string; onBack: () 
           <Avatar pubkey={pubkey} picture={profile?.picture} size={48} />
           <div className="flex flex-col min-w-0">
             <span className="font-semibold text-lg leading-tight truncate">{name}</span>
-            <span className="text-xs text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] truncate">
+            <span className="text-xs text-ink-faint font-[family-name:var(--font-inter)] truncate">
               {npubEncode(pubkey).slice(0, 24)}…
             </span>
           </div>
         </div>
 
         {profile?.about && (
-          <p className="text-sm text-[#2d2d2d]/70 leading-relaxed max-h-24 overflow-y-auto pr-1 whitespace-pre-wrap">
+          <p className="text-sm text-ink-soft leading-relaxed max-h-24 overflow-y-auto pr-1 whitespace-pre-wrap">
             {profile.about}
           </p>
         )}
@@ -79,13 +79,13 @@ function ProfilePanel({ pubkey, onBack, onClose }: { pubkey: string; onBack: () 
             href={profile.website}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)] truncate"
+            className="text-xs text-ink-soft hover:text-ink transition-colors font-[family-name:var(--font-inter)] truncate"
           >
             {profile.website}
           </a>
         )}
 
-        <div className="h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent shrink-0" />
+        <div className="h-px bg-line shrink-0" />
         <div className="flex-1 overflow-hidden">
           <ProfileFeed pubkey={pubkey} />
         </div>
@@ -93,14 +93,14 @@ function ProfilePanel({ pubkey, onBack, onClose }: { pubkey: string; onBack: () 
         <div className="flex justify-between gap-3 pt-2 shrink-0">
           <button
             onClick={onBack}
-            className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
+            className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-ink-soft hover:text-ink transition-colors"
           >
             ← Back
           </button>
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
+              className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-ink-soft hover:text-ink transition-colors"
             >
               Close
             </button>
@@ -109,8 +109,8 @@ function ProfilePanel({ pubkey, onBack, onClose }: { pubkey: string; onBack: () 
               disabled={pending}
               className={`text-sm px-4 py-2 rounded font-[family-name:var(--font-inter)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                 isFollowing
-                  ? "bg-white text-[#2d2d2d] border border-[#2d2d2d] hover:bg-[#f0f0ee]"
-                  : "bg-black text-white hover:bg-[#2d2d2d]"
+                  ? "bg-surface text-ink border border-line-strong hover:opacity-80"
+                  : "bg-ink text-bg hover:opacity-90"
               }`}
             >
               {pending ? "…" : isFollowing ? "Unfollow" : "Follow"}
@@ -151,7 +151,7 @@ export default function HashtagModal({ tag, onClose }: Props) {
         onClick={onClose}
       >
         <div
-          className="bg-[#f9f9f7] rounded-lg w-full max-w-lg overflow-hidden flex flex-col"
+          className="bg-bg rounded-lg w-full max-w-lg overflow-hidden flex flex-col"
           style={{ height: "836px", maxHeight: "90vh" }}
           onClick={(e) => e.stopPropagation()}
           onWheel={(e) => e.stopPropagation()}
@@ -166,16 +166,16 @@ export default function HashtagModal({ tag, onClose }: Props) {
           >
             {/* Panel 1: Hashtag feed */}
             <div className="w-1/2 flex flex-col h-full">
-              <div className="flex items-center justify-between px-8 pt-6 pb-4 shrink-0 border-b border-[#2d2d2d]/10">
+              <div className="flex items-center justify-between px-8 pt-6 pb-4 shrink-0 border-b border-line">
                 <div>
-                  <h2 className="text-xs uppercase tracking-widest text-[#2d2d2d]/40 font-[family-name:var(--font-inter)]">Hashtag</h2>
-                  <p className="mt-0.5 text-sm text-[#2d2d2d]/70 font-[family-name:var(--font-inter)]">#{currentTag}</p>
+                  <h2 className="text-xs uppercase tracking-widest text-ink-faint font-[family-name:var(--font-inter)]">Hashtag</h2>
+                  <p className="mt-0.5 text-sm text-ink-soft font-[family-name:var(--font-inter)]">#{currentTag}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {canGoBack && (
                     <button
                       onClick={goBack}
-                      className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
+                      className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-ink-soft hover:text-ink transition-colors"
                     >
                       ← Back
                     </button>
@@ -185,8 +185,8 @@ export default function HashtagModal({ tag, onClose }: Props) {
                       onClick={() => isFollowingTag ? unfollowHashtag(currentTag) : followHashtag(currentTag)}
                       className={`text-sm px-4 py-2 rounded font-[family-name:var(--font-inter)] transition-colors ${
                         isFollowingTag
-                          ? "bg-white text-[#2d2d2d] border border-[#2d2d2d] hover:bg-[#f0f0ee]"
-                          : "bg-black text-white hover:bg-[#2d2d2d]"
+                          ? "bg-surface text-ink border border-line-strong hover:opacity-80"
+                          : "bg-ink text-bg hover:opacity-90"
                       }`}
                     >
                       {isFollowingTag ? "Unfollow Feed" : "Follow Feed"}
@@ -194,7 +194,7 @@ export default function HashtagModal({ tag, onClose }: Props) {
                   )}
                   <button
                     onClick={onClose}
-                    className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
+                    className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-ink-soft hover:text-ink transition-colors"
                   >
                     Close
                   </button>

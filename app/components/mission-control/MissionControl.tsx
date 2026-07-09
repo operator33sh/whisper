@@ -9,7 +9,7 @@ import { useNsec } from "@/app/components/NsecGate";
 
 const Spinner = () => (
   <div className="flex justify-center pt-8">
-    <div className="w-5 h-5 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
+    <div className="w-5 h-5 rounded-full border-2 border-line-strong border-t-ink animate-spin" />
   </div>
 );
 
@@ -44,10 +44,10 @@ export default function MissionControl() {
     <div className="grid grid-cols-2 gap-12 h-full">
       <section ref={leftRef} className="flex flex-col gap-8 overflow-y-auto pr-4">
         <header className="shrink-0">
-          <h2 className="text-xs uppercase tracking-widest text-[#2d2d2d]/40 font-[family-name:var(--font-inter)]">
+          <h2 className="text-xs uppercase tracking-widest text-ink-faint font-[family-name:var(--font-inter)]">
             Resonance
           </h2>
-          <p className="mt-1 text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">
+          <p className="mt-1 text-sm text-ink-soft font-[family-name:var(--font-inter)]">
             Messages directed at you
           </p>
         </header>
@@ -56,10 +56,10 @@ export default function MissionControl() {
 
       <section ref={rightRef} className="flex flex-col gap-8 overflow-y-auto pr-4">
         <header className="shrink-0">
-          <h2 className="text-xs uppercase tracking-widest text-[#2d2d2d]/40 font-[family-name:var(--font-inter)]">
+          <h2 className="text-xs uppercase tracking-widest text-ink-faint font-[family-name:var(--font-inter)]">
             Reflection
           </h2>
-          <p className="mt-1 text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">
+          <p className="mt-1 text-sm text-ink-soft font-[family-name:var(--font-inter)]">
             Your own voice
           </p>
         </header>

@@ -48,14 +48,14 @@ export default function ReflectionLog({ pubkey }: Props) {
   if (loading && events.length === 0) {
     return (
       <div className="flex justify-center pt-8">
-        <div className="w-5 h-5 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
+        <div className="w-5 h-5 rounded-full border-2 border-line-strong border-t-ink animate-spin" />
       </div>
     );
   }
 
   if (!events.length && !loading) {
     return (
-      <p className="text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] text-sm">
+      <p className="text-ink-faint font-[family-name:var(--font-inter)] text-sm">
         No posts yet.
       </p>
     );
@@ -72,8 +72,8 @@ export default function ReflectionLog({ pubkey }: Props) {
             {rootId ? (
               <>
                 <RootPreview rootId={rootId} />
-                <div className="border-l-2 border-dashed border-[#2d2d2d]/20 h-3" />
-                <div className="pl-4 border-l-2 border-[#2d2d2d]/30">
+                <div className="border-l-2 border-dashed border-line-strong h-3" />
+                <div className="pl-4 border-l-2 border-line-strong">
                   <PostBody
                     content={event.content}
                     timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
@@ -86,7 +86,7 @@ export default function ReflectionLog({ pubkey }: Props) {
                 timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
               />
             )}
-            <div className="mt-8 h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
+            <div className="mt-8 h-px bg-line" />
           </li>
         );
       })}

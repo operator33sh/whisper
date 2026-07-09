@@ -26,7 +26,7 @@ export default function HashtagLink({ tag }: { tag: string }) {
         tabIndex={0}
         onClick={handleClick}
         onKeyDown={(e) => e.key === "Enter" && handleClick(e as unknown as React.MouseEvent)}
-        className="underline text-[#2d2d2d]/70 hover:text-[#2d2d2d] transition-colors cursor-pointer"
+        className="underline text-ink-soft hover:text-ink transition-colors cursor-pointer"
       >
         #{tag}
       </span>

@@ -1,13 +1,39 @@
 @import "tailwindcss";
 
+/* Verstild tokens — warm papier en zachte inkt */
 :root {
-  --background: #f9f9f7;
-  --foreground: #2d2d2d;
+  --w-bg: #faf9f6;
+  --w-surface: #ffffff;
+  --w-ink: #2b2a27;
+  --w-ink-soft: #6b6963;
+  --w-ink-faint: #a5a29a;
+  --w-line: rgba(43, 42, 39, 0.10);
+  --w-line-strong: rgba(43, 42, 39, 0.20);
+
+  --background: var(--w-bg);
+  --foreground: var(--w-ink);
+}
+
+html.dark {
+  --w-bg: #1c1b19;
+  --w-surface: #232220;
+  --w-ink: #e8e6e1;
+  --w-ink-soft: #9d9a93;
+  --w-ink-faint: #6e6c66;
+  --w-line: rgba(232, 230, 225, 0.10);
+  --w-line-strong: rgba(232, 230, 225, 0.20);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-bg: var(--w-bg);
+  --color-surface: var(--w-surface);
+  --color-ink: var(--w-ink);
+  --color-ink-soft: var(--w-ink-soft);
+  --color-ink-faint: var(--w-ink-faint);
+  --color-line: var(--w-line);
+  --color-line-strong: var(--w-line-strong);
   --font-playfair: var(--font-playfair);
   --font-crimson: var(--font-crimson);
   --font-inter: var(--font-inter);
@@ -27,6 +53,13 @@ button, input, label, nav {
   font-family: var(--font-inter), system-ui, sans-serif;
 }
 
+/* Trage fade bij thema-wissel; class wordt tijdelijk op <html> gezet */
+.theme-transition,
+.theme-transition * {
+  transition: background-color 0.8s ease, color 0.8s ease,
+    border-color 0.8s ease, fill 0.8s ease, stroke 0.8s ease !important;
+}
+
 @keyframes sacred-glow {
   0%, 100% {
     opacity: 0.3;
@@ -42,9 +75,44 @@ button, input, label, nav {
   animation: sacred-glow 2.5s ease-in-out infinite;
 }
 
+/* Variant voor SVG-iconen: text-shadow werkt niet op SVG */
+@keyframes sacred-glow-icon {
+  0%, 100% {
+    opacity: 0.3;
+    filter: none;
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px rgba(100, 180, 255, 1))
+      drop-shadow(0 0 14px rgba(100, 180, 255, 0.6))
+      drop-shadow(0 0 25px rgba(100, 180, 255, 0.25));
+  }
+}
+
+.animate-sacred-glow-icon {
+  animation: sacred-glow-icon 2.5s ease-in-out infinite;
+}
+
+/* Reply-link verschijnt pas bij stilstaan bij het bericht */
+.reply-fade {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.group\/post:hover .reply-fade,
+.group\/post:focus-within .reply-fade {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .reply-fade {
+    opacity: 1;
+  }
+}
+
 * {
   scrollbar-width: thin;
-  scrollbar-color: #c0c0bc #ebebe8;
+  scrollbar-color: var(--w-line-strong) transparent;
 }
 
 ::-webkit-scrollbar {
@@ -52,10 +120,10 @@ button, input, label, nav {
 }
 
 ::-webkit-scrollbar-track {
-  background: #ebebe8;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c0c0bc;
+  background: var(--w-line-strong);
   border-radius: 3px;
 }

@@ -224,27 +224,26 @@ export default function PublicFeed() {
   return (
     <section className="h-full flex flex-col overflow-hidden">
       <header className="shrink-0 mb-6">
-        <h2 className="text-xs uppercase tracking-widest text-[#2d2d2d]/40 font-[family-name:var(--font-inter)]">Feed</h2>
-        <p className="mt-1 text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">Discover posts from the network</p>
+        <p className="font-[family-name:var(--font-crimson)] italic text-sm text-ink-faint">Discover posts from the network</p>
       </header>
       <div className="relative flex-1 overflow-hidden">
         {(loadingPosts || filtered.length === 0) && (
           <div className="absolute inset-0 flex items-start justify-center pt-8 pointer-events-none">
-            <div className="w-6 h-6 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
+            <div className="w-6 h-6 rounded-full border-2 border-line-strong border-t-ink animate-spin" />
           </div>
         )}
         <ul ref={feedRef} className="relative overflow-y-auto h-full pr-2">
           {filtered.map((event) => {
             const isMinimized = event.tags.filter((t) => t[0] === "t").length > 8 && !expandedPosts.has(event.id);
             return (
-              <li key={event.id} className="leading-relaxed bg-[#f9f9f7] pt-8 first:pt-0">
+              <li key={event.id} className="group/post leading-relaxed bg-bg pt-8 pb-8 first:pt-0 border-b-[0.5px] border-line last:border-b-0">
                 <div className="flex items-center justify-between gap-4 mb-2">
                   <UserMeta pubkey={event.pubkey} />
                   {event.pubkey !== myPubkey && (
                     <button
                       onClick={() => handleFollow(event.pubkey)}
                       disabled={pending === event.pubkey}
-                      className="shrink-0 bg-black text-white text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] hover:bg-[#2d2d2d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="shrink-0 text-xs text-ink-faint hover:text-ink-soft font-[family-name:var(--font-inter)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {pending === event.pubkey ? "Following…" : "Follow"}
                     </button>
@@ -253,7 +252,7 @@ export default function PublicFeed() {
                 {isMinimized ? (
                   <button
                     onClick={() => setExpandedPosts((prev) => new Set([...prev, event.id]))}
-                    className="text-xs text-[#2d2d2d]/40 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)] mt-1"
+                    className="text-xs text-ink-faint hover:text-ink transition-colors font-[family-name:var(--font-inter)] mt-1"
                   >
                     + Post minimalized
                   </button>
@@ -261,13 +260,12 @@ export default function PublicFeed() {
                   <>
                     <PostBody
                       content={event.content}
-                      timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
+                      timestamp={timeAgo(event.created_at)}
                       action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} />}
                     />
                     <PostReplies eventId={event.id} count={replyCounts.get(event.id) ?? 0} replyCounts={replyCounts} />
                   </>
                 )}
-                <div className="mt-8 h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
               </li>
             );
           })}

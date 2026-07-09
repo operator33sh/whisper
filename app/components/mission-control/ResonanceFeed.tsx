@@ -76,14 +76,14 @@ export default function ResonanceFeed({ pubkey }: Props) {
   if (loading && events.length === 0) {
     return (
       <div className="flex justify-center pt-8">
-        <div className="w-5 h-5 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
+        <div className="w-5 h-5 rounded-full border-2 border-line-strong border-t-ink animate-spin" />
       </div>
     );
   }
 
   if (!events.length) {
     return (
-      <p className="text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] text-sm">
+      <p className="text-ink-faint font-[family-name:var(--font-inter)] text-sm">
         No messages.
       </p>
     );

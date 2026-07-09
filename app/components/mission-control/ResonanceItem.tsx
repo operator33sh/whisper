@@ -69,7 +69,7 @@ export default function ResonanceItem({ event }: Props) {
       )}
 
       {/* The reply/mention: indented below parent */}
-      <div className={hasParent ? "pl-5 border-l border-[#2d2d2d]/15" : ""}>
+      <div className={hasParent ? "pl-5 border-l border-line-strong/15" : ""}>
         <div className="mb-2">
           <UserMeta pubkey={event.pubkey} />
         </div>
@@ -79,7 +79,7 @@ export default function ResonanceItem({ event }: Props) {
           action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} rootEventId={rootId ?? undefined} />}
         />
       </div>
-      <div className="mt-6 h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
+      <div className="mt-6 h-px bg-line" />
     </li>
   );
 }

@@ -169,24 +169,24 @@ export default function HashtagFeed({ tag, scrollable = true }: { tag: string; s
     <div className={scrollable ? "relative h-full" : "relative"}>
       {loading && (
         <div className={scrollable ? "absolute inset-0 flex items-start justify-center pt-8 pointer-events-none z-0" : "flex justify-center pt-8"}>
-          <div className="w-6 h-6 rounded-full border-2 border-[#2d2d2d]/20 border-t-[#2d2d2d] animate-spin" />
+          <div className="w-6 h-6 rounded-full border-2 border-line-strong border-t-ink animate-spin" />
         </div>
       )}
       {!loading && posts.length === 0 && (
-        <p className="text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] text-sm pt-8">
+        <p className="text-ink-faint font-[family-name:var(--font-inter)] text-sm pt-8">
           No posts found for #{tag}.
         </p>
       )}
-      <ul ref={feedRef} className={scrollable ? "overflow-y-auto h-full pr-2 bg-[#f9f9f7]" : "pr-2"}>
+      <ul ref={feedRef} className={scrollable ? "overflow-y-auto h-full pr-2 bg-bg" : "pr-2"}>
         {posts.map((event) => (
-          <li key={event.id} className="relative z-10 leading-relaxed bg-[#f9f9f7] pt-6 first:pt-0">
+          <li key={event.id} className="group/post relative z-10 leading-relaxed bg-bg pt-6 pb-6 first:pt-0 border-b-[0.5px] border-line last:border-b-0">
             <div className="flex items-center justify-between gap-4 mb-2">
               <UserMeta pubkey={event.pubkey} />
               {event.pubkey !== myPubkey && !follows.includes(event.pubkey) && (
                 <button
                   onClick={() => handleFollow(event.pubkey)}
                   disabled={pending === event.pubkey}
-                  className="shrink-0 bg-black text-white text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] hover:bg-[#2d2d2d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="shrink-0 text-xs text-ink-faint hover:text-ink-soft font-[family-name:var(--font-inter)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {pending === event.pubkey ? "Following…" : "Follow"}
                 </button>
@@ -194,11 +194,10 @@ export default function HashtagFeed({ tag, scrollable = true }: { tag: string; s
             </div>
             <PostBody
               content={event.content}
-              timestamp={`${new Date(event.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(event.created_at)}`}
+              timestamp={timeAgo(event.created_at)}
               action={<ReplyButton eventId={event.id} eventPubkey={event.pubkey} />}
             />
             <PostReplies eventId={event.id} count={replyCounts.get(event.id) ?? 0} replyCounts={replyCounts} />
-            <div className="mt-6 h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
           </li>
         ))}
         <li><div ref={sentinelRef} className="h-4" /></li>

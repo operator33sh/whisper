@@ -56,7 +56,7 @@ function renderTextWithLinks(text: string, keyPrefix: string) {
             href={upart}
             target="_blank"
             rel="noopener noreferrer"
-            className="underline text-[#2d2d2d]/70 hover:text-[#2d2d2d] transition-colors break-all"
+            className="underline text-ink-soft hover:text-ink transition-colors break-all"
           >
             {upart}
           </a>
@@ -117,7 +117,7 @@ export default function PostContent({ content }: { content: string }) {
                     key={`${ci}-${yi}-${i}`}
                     src={part}
                     controls
-                    className="rounded max-w-full max-h-96"
+                    className="rounded-md max-w-full max-h-96"
                     preload="metadata"
                   />
                 );
@@ -127,7 +127,7 @@ export default function PostContent({ content }: { content: string }) {
                   key={`${ci}-${yi}-${i}`}
                   src={part}
                   alt=""
-                  className="rounded max-w-full cursor-pointer"
+                  className="rounded-md max-w-full max-h-96 object-cover cursor-pointer"
                   loading="lazy"
                   onClick={() => setLightbox(part)}
                 />

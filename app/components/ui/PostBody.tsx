@@ -37,7 +37,7 @@ export default function PostBody({ content, timestamp, action }: Props) {
     <div>
       <div
         ref={ref}
-        className={canTruncate && !expanded ? "line-clamp-8" : undefined}
+        className={`text-[1.0625rem] leading-[1.75] ${canTruncate && !expanded ? "line-clamp-8" : ""}`}
       >
         <PostContent content={content} />
       </div>
@@ -45,17 +45,17 @@ export default function PostBody({ content, timestamp, action }: Props) {
         <div className="flex justify-end">
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="mt-1 text-sm text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)]"
+            className="mt-1 text-sm text-ink-soft hover:text-ink transition-colors font-[family-name:var(--font-inter)]"
           >
             {expanded ? "Show less" : "Read more"}
           </button>
         </div>
       )}
       <div className="flex items-center justify-between mt-2">
-        <span className="text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">
+        <span className="text-xs text-ink-faint font-[family-name:var(--font-inter)]">
           {timestamp}
         </span>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 reply-fade">
           {action}
         </div>
       </div>

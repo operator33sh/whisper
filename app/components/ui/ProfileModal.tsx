@@ -26,7 +26,7 @@ function renderAbout(text: string) {
           href={part}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors"
+          className="text-ink-soft hover:text-ink transition-colors"
         >
           {part}
         </a>
@@ -139,10 +139,10 @@ function FollowerRow({ followerPubkey, onOpenProfile }: { followerPubkey: string
         <button
           onClick={toggleFollow}
           disabled={pending}
-          className={`text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] shrink-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+          className={`text-xs px-3 py-1 rounded font-[family-name:var(--font-inter)] shrink-0 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed ${
             isFollowing
-              ? "bg-white text-[#2d2d2d] border border-[#2d2d2d] hover:bg-[#f0f0ee]"
-              : "bg-black text-white hover:bg-[#2d2d2d]"
+              ? "bg-surface text-ink border border-line-strong hover:opacity-80"
+              : "bg-ink text-bg hover:opacity-90"
           }`}
         >
           {pending ? "…" : isFollowing ? "Unfollow" : "Follow"}
@@ -303,7 +303,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
     )}
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
       <div
-        className="bg-[#f9f9f7] rounded-lg w-full max-w-lg overflow-hidden"
+        className="bg-bg text-ink rounded-lg w-full max-w-lg overflow-hidden"
         style={{ height: "836px", maxHeight: "90vh" }}
         onClick={(e) => e.stopPropagation()}
         onWheel={(e) => e.stopPropagation()}
@@ -313,7 +313,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
           /* ── Profile view panel ── */
           <div className="flex flex-col h-full">
             {/* Banner */}
-            <div className="h-28 bg-[#e8e8e5] rounded-t-lg overflow-hidden shrink-0">
+            <div className="h-28 bg-line rounded-t-lg overflow-hidden shrink-0">
               {profile?.banner && (
                 <img src={profile.banner} alt="" className="w-full h-full object-cover" />
               )}
@@ -332,7 +332,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
                   </button>
                   <div className="flex flex-col min-w-0">
                     <span className="font-semibold text-lg leading-tight truncate">{name}</span>
-                    <span className="text-xs text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] truncate">
+                    <span className="text-xs text-ink-faint font-[family-name:var(--font-inter)] truncate">
                       {npub.slice(0, 24)}…
                     </span>
                   </div>
@@ -341,13 +341,13 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
                   <div className="flex items-center gap-2 shrink-0 ml-4">
                     <button
                       onClick={openFollowers}
-                      className="text-xs px-3 py-1.5 rounded border border-[#2d2d2d] bg-white text-[#2d2d2d] font-[family-name:var(--font-inter)] hover:bg-[#f0f0ee] transition-colors"
+                      className="text-xs px-3 py-1.5 rounded border border-line-strong bg-surface text-ink font-[family-name:var(--font-inter)] hover:opacity-80 transition-opacity"
                     >
                       Followers
                     </button>
                     <button
                       onClick={openEdit}
-                      className="text-xs px-3 py-1.5 rounded border border-[#2d2d2d] bg-white text-[#2d2d2d] font-[family-name:var(--font-inter)] hover:bg-[#f0f0ee] transition-colors"
+                      className="text-xs px-3 py-1.5 rounded border border-line-strong bg-surface text-ink font-[family-name:var(--font-inter)] hover:opacity-80 transition-opacity"
                     >
                       Edit profile
                     </button>
@@ -356,7 +356,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
               </div>
 
               {profile?.about && (
-                <p className="text-sm text-[#2d2d2d]/70 leading-relaxed max-h-24 overflow-y-scroll pr-1 whitespace-pre-wrap">{renderAbout(profile.about)}</p>
+                <p className="text-sm text-ink-soft leading-relaxed max-h-24 overflow-y-scroll pr-1 whitespace-pre-wrap">{renderAbout(profile.about)}</p>
               )}
 
               {profile?.website && (
@@ -364,19 +364,19 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
                   href={profile.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-[#2d2d2d]/50 hover:text-[#2d2d2d] transition-colors font-[family-name:var(--font-inter)] truncate"
+                  className="text-xs text-ink-soft hover:text-ink transition-colors font-[family-name:var(--font-inter)] truncate"
                 >
                   {profile.website}
                 </a>
               )}
 
-              <div className="h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent" />
+              <div className="h-px bg-line" />
               <ProfileFeed pubkey={pubkey} />
 
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   onClick={onClose}
-                  className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
+                  className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-ink-soft hover:text-ink transition-colors"
                 >
                   Close
                 </button>
@@ -384,10 +384,10 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
                   <button
                     onClick={toggleFollow}
                     disabled={pending}
-                    className={`text-sm px-4 py-2 rounded font-[family-name:var(--font-inter)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`text-sm px-4 py-2 rounded font-[family-name:var(--font-inter)] transition-opacity disabled:opacity-50 disabled:cursor-not-allowed ${
                       isFollowing
-                        ? "bg-white text-[#2d2d2d] border border-[#2d2d2d] hover:bg-[#f0f0ee]"
-                        : "bg-black text-white hover:bg-[#2d2d2d]"
+                        ? "bg-surface text-ink border border-line-strong hover:opacity-80"
+                        : "bg-ink text-bg hover:opacity-90"
                     }`}
                   >
                     {pending ? "…" : isFollowing ? "Unfollow" : "Follow"}
@@ -404,7 +404,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
             <div className="flex items-center gap-3 px-8 pt-7 pb-4 shrink-0">
               <button
                 onClick={() => setShowFollowers(false)}
-                className="text-[#2d2d2d]/40 hover:text-[#2d2d2d] transition-colors"
+                className="text-ink-faint hover:text-ink transition-colors"
                 aria-label="Back"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -413,16 +413,16 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
               </button>
               <h3 className="text-sm font-semibold font-[family-name:var(--font-inter)]">Followers</h3>
             </div>
-            <div className="h-px bg-gradient-to-r from-transparent via-[#2d2d2d]/20 to-transparent mx-8 shrink-0" />
+            <div className="h-px bg-line mx-8 shrink-0" />
             <div className="flex-1 overflow-y-auto px-7" onWheel={(e) => e.stopPropagation()}>
               {loadingFollowers && followerPubkeys.length === 0 && (
-                <p className="text-sm text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] py-6 text-center">Loading…</p>
+                <p className="text-sm text-ink-faint font-[family-name:var(--font-inter)] py-6 text-center">Loading…</p>
               )}
               {!loadingFollowers && followerPubkeys.length === 0 && (
-                <p className="text-sm text-[#2d2d2d]/40 font-[family-name:var(--font-inter)] py-6 text-center">No followers yet.</p>
+                <p className="text-sm text-ink-faint font-[family-name:var(--font-inter)] py-6 text-center">No followers yet.</p>
               )}
               {followerPubkeys.length > 0 && (
-                <ul className="divide-y divide-[#2d2d2d]/10">
+                <ul className="divide-y divide-line">
                   {followerPubkeys.map((pk) => (
                     <FollowerRow key={pk} followerPubkey={pk} onOpenProfile={setOpenedFollowerPubkey} />
                   ))}
@@ -432,7 +432,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
             <div className="flex justify-end px-8 py-4 shrink-0">
               <button
                 onClick={() => setShowFollowers(false)}
-                className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
+                className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-ink-soft hover:text-ink transition-colors"
               >
                 Close
               </button>
@@ -444,7 +444,7 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
           /* ── Edit panel ── */
           <div className="flex flex-col h-full">
             {/* Banner upload */}
-            <div className="relative h-28 bg-[#e8e8e5] rounded-t-lg overflow-hidden shrink-0 group">
+            <div className="relative h-28 bg-line rounded-t-lg overflow-hidden shrink-0 group">
               {editBanner && (
                 <img src={editBanner} alt="" className="w-full h-full object-cover" />
               )}
@@ -509,13 +509,13 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">Profile picture</span>
+                  <span className="text-xs text-ink-soft font-[family-name:var(--font-inter)]">Profile picture</span>
                   {avatarUpload.progress !== null && (
                     <div className="flex items-center gap-2">
-                      <div className="h-0.5 w-24 bg-[#2d2d2d]/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#2d2d2d] transition-all duration-150" style={{ width: `${avatarUpload.progress}%` }} />
+                      <div className="h-0.5 w-24 bg-line rounded-full overflow-hidden">
+                        <div className="h-full bg-ink transition-all duration-150" style={{ width: `${avatarUpload.progress}%` }} />
                       </div>
-                      <span className="text-xs text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">{avatarUpload.progress}%</span>
+                      <span className="text-xs text-ink-soft font-[family-name:var(--font-inter)]">{avatarUpload.progress}%</span>
                     </div>
                   )}
                   {avatarUpload.error && <span className="text-red-500 text-xs font-[family-name:var(--font-inter)]">{avatarUpload.error}</span>}
@@ -524,40 +524,40 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
 
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">Display name</label>
+                  <label className="text-xs text-ink-soft font-[family-name:var(--font-inter)]">Display name</label>
                   <input
                     type="text"
                     value={editDisplayName}
                     onChange={(e) => setEditDisplayName(e.target.value)}
-                    className="border border-[#2d2d2d]/30 rounded px-3 py-1.5 text-sm font-[family-name:var(--font-inter)] bg-white focus:outline-none focus:border-[#2d2d2d]"
+                    className="border border-line-strong rounded px-3 py-1.5 text-sm font-[family-name:var(--font-inter)] bg-surface text-ink focus:outline-none focus:border-ink"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">Username</label>
+                  <label className="text-xs text-ink-soft font-[family-name:var(--font-inter)]">Username</label>
                   <input
                     type="text"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="border border-[#2d2d2d]/30 rounded px-3 py-1.5 text-sm font-[family-name:var(--font-inter)] bg-white focus:outline-none focus:border-[#2d2d2d]"
+                    className="border border-line-strong rounded px-3 py-1.5 text-sm font-[family-name:var(--font-inter)] bg-surface text-ink focus:outline-none focus:border-ink"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">Bio</label>
+                  <label className="text-xs text-ink-soft font-[family-name:var(--font-inter)]">Bio</label>
                   <textarea
                     value={editAbout}
                     onChange={(e) => setEditAbout(e.target.value)}
                     rows={3}
-                    className="border border-[#2d2d2d]/30 rounded px-3 py-1.5 text-sm font-[family-name:var(--font-inter)] bg-white focus:outline-none focus:border-[#2d2d2d] resize-none"
+                    className="border border-line-strong rounded px-3 py-1.5 text-sm font-[family-name:var(--font-inter)] bg-surface text-ink focus:outline-none focus:border-ink resize-none"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#2d2d2d]/50 font-[family-name:var(--font-inter)]">Website</label>
+                  <label className="text-xs text-ink-soft font-[family-name:var(--font-inter)]">Website</label>
                   <input
                     type="url"
                     value={editWebsite}
                     onChange={(e) => setEditWebsite(e.target.value)}
                     placeholder="https://"
-                    className="border border-[#2d2d2d]/30 rounded px-3 py-1.5 text-sm font-[family-name:var(--font-inter)] bg-white focus:outline-none focus:border-[#2d2d2d]"
+                    className="border border-line-strong rounded px-3 py-1.5 text-sm font-[family-name:var(--font-inter)] bg-surface text-ink focus:outline-none focus:border-ink"
                   />
                 </div>
               </div>
@@ -567,14 +567,14 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   onClick={() => setEditing(false)}
-                  className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-[#2d2d2d]/60 hover:text-[#2d2d2d] transition-colors"
+                  className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-ink-soft hover:text-ink transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={saveProfile}
                   disabled={saving || avatarUpload.progress !== null || bannerUpload.progress !== null}
-                  className="bg-black text-white text-sm px-4 py-2 rounded font-[family-name:var(--font-inter)] hover:bg-[#2d2d2d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-ink text-bg text-sm px-4 py-2 rounded font-[family-name:var(--font-inter)] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving ? "Saving…" : "Save"}
                 </button>

@@ -1,0 +1,259 @@
+/* ============================================================
+   Whisper — verstild
+   Eén stroom, stille randen, resonantie boven distortie.
+
+   Selectors zijn beschrijvend gekozen; hernoem ze naar je
+   eigen classes waar nodig. Elke sectie licht toe wélke
+   ruisbron hij wegneemt.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. Tokens — het hele kleurenpalet fluistert
+   Geen puur zwart, geen puur wit: warm papier en zachte inkt.
+   ------------------------------------------------------------ */
+:root {
+  --w-bg: #faf9f6;            /* papier, net geen wit */
+  --w-surface: #ffffff;
+  --w-ink: #2b2a27;           /* zachte inkt, geen #000 */
+  --w-ink-soft: #6b6963;      /* secundaire tekst */
+  --w-ink-faint: #a5a29a;     /* metadata, timestamps */
+  --w-line: rgba(43, 42, 39, 0.10);   /* haarlijn-borders */
+  --w-line-strong: rgba(43, 42, 39, 0.20);
+
+  --w-font-voice: 'Crimson Pro', Georgia, serif;  /* de stem: berichten */
+  --w-font-ui: system-ui, sans-serif;             /* het chrome: metadata */
+
+  --w-measure: 34rem;         /* leesbreedte van de kolom */
+  --w-breath: 2.5rem;         /* verticale ademruimte tussen berichten */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --w-bg: #1c1b19;          /* avond, geen pikzwart */
+    --w-surface: #232220;
+    --w-ink: #e8e6e1;
+    --w-ink-soft: #9d9a93;
+    --w-ink-faint: #6e6c66;
+    --w-line: rgba(232, 230, 225, 0.10);
+    --w-line-strong: rgba(232, 230, 225, 0.20);
+  }
+}
+
+body {
+  background: var(--w-bg);
+  color: var(--w-ink);
+  font-family: var(--w-font-ui);
+}
+
+/* ------------------------------------------------------------
+   2. Sidebar — van zwart blok naar lichte rail
+   Neemt weg: het hardste vlak op de pagina.
+   ------------------------------------------------------------ */
+.sidebar {
+  background: transparent;            /* was: zwart */
+  border-right: 0.5px solid var(--w-line);
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.75rem;
+  padding: 1.5rem 0;
+}
+
+.sidebar .logo {
+  color: var(--w-ink);                /* het golf-icoon, currentColor */
+  width: 30px;
+  height: 30px;
+}
+
+.sidebar a,
+.sidebar button {
+  color: var(--w-ink-faint);
+  background: none;
+  border: none;
+  transition: color 0.3s ease;
+}
+
+.sidebar a:hover,
+.sidebar button:hover {
+  color: var(--w-ink);
+}
+
+/* Verticale tekstlabels (CONTROL, FEEDS) vervallen —
+   een icoon met title-attribuut zegt genoeg. */
+.sidebar .rail-label { display: none; }
+
+/* ------------------------------------------------------------
+   3. Header — de naam draagt, de rest wijkt
+   Neemt weg: de zwarte Logout-knop.
+   ------------------------------------------------------------ */
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  max-width: var(--w-measure);
+  margin: 0 auto;
+  padding: 2rem 0 2.5rem;
+}
+
+.header .wordmark {
+  font-family: var(--w-font-voice);
+  font-weight: 300;
+  font-size: 1.5rem;
+  letter-spacing: 0.05em;
+}
+
+/* Uitloggen: van knop naar fluistering */
+.header .logout {
+  background: none;                   /* was: zwart gevuld */
+  border: none;
+  font-size: 0.75rem;
+  color: var(--w-ink-faint);
+  cursor: pointer;
+}
+
+.header .logout:hover {
+  color: var(--w-ink-soft);
+}
+
+/* ------------------------------------------------------------
+   4. Eén stroom — de twee kolommen worden er één
+   Neemt weg: de permanente concurrentie om aandacht.
+   ------------------------------------------------------------ */
+.feed-grid {
+  display: block;                     /* was: grid met 2 kolommen */
+  max-width: var(--w-measure);
+  margin: 0 auto;
+}
+
+/* De discover-kolom verdwijnt uit de standaardweergave.
+   Hij komt terug als aparte route/weergave, geopend via
+   de uitnodiging onderaan (zie sectie 7). */
+.feed-column--discover { display: none; }
+
+/* Kolomkoppen (FOLLOWING / FEED) mogen weg of worden
+   een stille, cursieve regel in de stem van de site. */
+.feed-heading {
+  font-family: var(--w-font-voice);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  text-transform: none;               /* was: uppercase + spacing */
+  color: var(--w-ink-faint);
+  margin-bottom: 1.5rem;
+}
+
+/* ------------------------------------------------------------
+   5. Berichten — de woorden krijgen alles
+   Neemt weg: Unfollow-knoppen, dubbele timestamps, lege tellers.
+   ------------------------------------------------------------ */
+.post {
+  padding: var(--w-breath) 0;
+  border-bottom: 0.5px solid var(--w-line);
+}
+
+.post:last-child { border-bottom: none; }
+
+.post-body {
+  font-family: var(--w-font-voice);
+  font-size: 1.0625rem;               /* 17px */
+  line-height: 1.75;
+  color: var(--w-ink);
+}
+
+.post-author {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Eén tijdsaanduiding, de zachtste. Verberg de datum,
+   houd de relatieve tijd — of andersom, maar niet beide. */
+.post-meta {
+  font-size: 0.75rem;
+  color: var(--w-ink-faint);
+}
+.post-meta .absolute-date { display: none; }
+
+/* Unfollow verhuist naar de profielweergave.
+   In de tijdlijn bestaat hij niet. */
+.post .unfollow { display: none; }
+
+/* Reacties: nul is stilte. Toon de regel alleen als er
+   werkelijk iets terugklinkt. Vereist data-replies="N"
+   op het element (of verberg via je template als N == 0). */
+.post-replies[data-replies="0"] { display: none; }
+
+.post-replies {
+  font-size: 0.75rem;
+  color: var(--w-ink-faint);
+  margin-top: 0.625rem;
+}
+
+/* Beantwoorden verschijnt pas als je bij het bericht
+   stilstaat — aanwezig, maar nooit dringend. */
+.post .reply-link {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  font-size: 0.75rem;
+  color: var(--w-ink-faint);
+}
+
+.post:hover .reply-link,
+.post:focus-within .reply-link {
+  opacity: 1;
+}
+
+/* Op aanraakschermen is er geen hover — daar blijft
+   de link gewoon zichtbaar. */
+@media (hover: none) {
+  .post .reply-link { opacity: 1; }
+}
+
+/* ------------------------------------------------------------
+   6. Media — beelden dienen, niet domineren
+   Zachtere aanwezigheid voor afbeeldingen in berichten.
+   ------------------------------------------------------------ */
+.post img {
+  border-radius: 6px;
+  max-height: 24rem;
+  object-fit: cover;
+}
+
+/* ------------------------------------------------------------
+   7. De deur naar het netwerk — ontdekken als keuze
+   Vervangt: de permanente discover-kolom.
+   ------------------------------------------------------------ */
+.explore-invitation {
+  display: block;
+  text-align: center;
+  font-family: var(--w-font-voice);
+  font-style: italic;
+  font-size: 0.875rem;
+  color: var(--w-ink-faint);
+  padding: 1.5rem 0 3rem;
+  margin-top: 1rem;
+  border-top: 0.5px solid var(--w-line);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.explore-invitation:hover {
+  color: var(--w-ink-soft);
+}
+
+/* ------------------------------------------------------------
+   8. Footer — praktische zaken naar de achtergrond
+   Het bitcoin-adres en support-info horen op een
+   over-pagina; in de footer blijft hoogstens één link.
+   ------------------------------------------------------------ */
+.site-footer {
+  max-width: var(--w-measure);
+  margin: 0 auto;
+  padding: 2rem 0;
+  font-size: 0.75rem;
+  color: var(--w-ink-faint);
+  text-align: center;
+}
+
+.site-footer .support-details { display: none; }

@@ -46,11 +46,7 @@ function FollowToggle({ pubkey }: { pubkey: string }) {
     <button
       onClick={toggle}
       disabled={pending}
-      className={`shrink-0 text-xs px-2 py-0.5 rounded font-[family-name:var(--font-inter)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-        isFollowing
-          ? "bg-white text-[#2d2d2d] border border-[#2d2d2d] hover:bg-[#f0f0ee]"
-          : "bg-black text-white hover:bg-[#2d2d2d]"
-      }`}
+      className="shrink-0 text-xs text-ink-faint hover:text-ink-soft font-[family-name:var(--font-inter)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {pending ? "…" : isFollowing ? "Unfollow" : "Follow"}
     </button>
@@ -98,11 +94,13 @@ export default function PostReplies({ eventId, count, replyCounts, rootEventId }
     return () => sub.close();
   }, [expanded, fetchKey, eventId, pool]);
 
+  // nul is stilte: geen "0 replies"-regel
+  if (displayCount === 0 && !expanded) return null;
+
   return (
     <div className="mt-2">
       <button
         onClick={() => {
-          if (displayCount === 0) return;
           if (expanded) {
             setExpanded(false);
           } else {
@@ -110,29 +108,28 @@ export default function PostReplies({ eventId, count, replyCounts, rootEventId }
             setExpanded(true);
           }
         }}
-        disabled={displayCount === 0}
-        className="flex items-center gap-1 text-sm text-[#2d2d2d]/50 font-[family-name:var(--font-inter)] disabled:cursor-default enabled:hover:text-[#2d2d2d] enabled:transition-colors"
+        className="flex items-center gap-1 text-sm text-ink-soft font-[family-name:var(--font-inter)] hover:text-ink transition-colors"
       >
         <span>{expanded ? "−" : "+"}</span>
         <span>{displayCount} {displayCount === 1 ? "reply" : "replies"}</span>
       </button>
 
       {expanded && (
-        <ul className="mt-4 space-y-4 pl-4 border-l border-[#2d2d2d]/20">
+        <ul className="mt-4 space-y-4 pl-4 border-l border-line-strong">
           {replies.length === 0 ? (
-            <li className="text-sm text-[#2d2d2d]/40 font-[family-name:var(--font-inter)]">Loading…</li>
+            <li className="text-sm text-ink-faint font-[family-name:var(--font-inter)]">Loading…</li>
           ) : (
             replies.map((reply) => {
               const replyCount = replyCounts?.get(reply.id) ?? 0;
               return (
-                <li key={reply.id} className="leading-relaxed">
+                <li key={reply.id} className="group/post leading-relaxed">
                   <div className="flex items-center justify-between gap-4 mb-1">
                     <UserMeta pubkey={reply.pubkey} size={24} />
                     <FollowToggle pubkey={reply.pubkey} />
                   </div>
                   <PostBody
                     content={reply.content}
-                    timestamp={`${new Date(reply.created_at * 1000).toLocaleDateString("en-GB")} · ${timeAgo(reply.created_at)}`}
+                    timestamp={timeAgo(reply.created_at)}
                     action={<ReplyButton eventId={reply.id} eventPubkey={reply.pubkey} rootEventId={root} />}
                   />
                   <PostReplies

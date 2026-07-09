@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Whisper">
+  <title>Whisper</title>
+  <desc>Een golf die uitdooft in een vlakke lijn: geluid dat stilte wordt.</desc>
+  <path d="M6 48
+           C 12 25, 20 25, 26 48
+           C 31 65, 38 65, 44 48
+           C 48 37, 54 37, 58 48
+           C 61 55, 66 55, 69 48
+           C 71 44.5, 74.5 44.5, 76.5 48
+           L 90 48"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+</svg>
