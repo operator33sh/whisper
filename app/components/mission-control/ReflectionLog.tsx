@@ -14,13 +14,14 @@ interface Props {
   pubkey: string;
 }
 
-function getRootId(event: Event): string | null {
+// Returns the full root e-tag so the relay hint (tag[2]) is available for the fetch
+function getRootTag(event: Event): string[] | null {
   const eTags = event.tags.filter((t) => t[0] === "e");
   if (eTags.length === 0) return null;
-  return eTags.find((t) => t[3] === "root")?.[1] ?? eTags[0][1];
+  return eTags.find((t) => t[3] === "root") ?? eTags[0];
 }
 
-function RootPreview({ rootId }: { rootId: string }) {
+function RootPreview({ rootId, relayHint }: { rootId: string; relayHint?: string }) {
   const { pool } = useNostrContext();
   const fetchEvents = useEvents((s) => s.fetchEvents);
   const storedEvents = useEvents((s) => s.events);
@@ -31,18 +32,28 @@ function RootPreview({ rootId }: { rootId: string }) {
     if (root) return;
     // Retry a few times while the root is missing (see ResonanceItem);
     // the store's `fetching` set dedupes in-flight requests
-    fetchEvents(pool, [rootId]);
+    const hints = relayHint ? [relayHint] : undefined;
+    fetchEvents(pool, [rootId], hints);
     let attempts = 0;
     const timer = setInterval(() => {
       if (++attempts > 3) {
         clearInterval(timer);
         return;
       }
-      fetchEvents(pool, [rootId]);
+      fetchEvents(pool, [rootId], hints);
     }, 5000);
     return () => clearInterval(timer);
-  }, [rootId, root, pool, fetchEvents]);
-  if (!root) return null;
+  }, [rootId, relayHint, root, pool, fetchEvents]);
+
+  if (!root) {
+    // Placeholder keeps the thread structure visible while the root is
+    // loading or when it isn't available on any reachable relay
+    return (
+      <p className="mb-1 text-sm italic text-ink-faint font-[family-name:var(--font-inter)]">
+        Original post not available
+      </p>
+    );
+  }
 
   return (
     <div className="mb-1">
@@ -78,12 +89,13 @@ export default function ReflectionLog({ pubkey }: Props) {
   return (
     <ul className="flex flex-col">
       {replies.map((event) => {
-        const rootId = getRootId(event);
+        const rootTag = getRootTag(event);
+        const rootId = rootTag?.[1];
         return (
           <li key={event.id} className="leading-relaxed pt-8 first:pt-0">
             {rootId ? (
               <>
-                <RootPreview rootId={rootId} />
+                <RootPreview rootId={rootId} relayHint={rootTag?.[2] || undefined} />
                 <div className="border-l-2 border-dashed border-line-strong h-3" />
                 <div className="pl-4 border-l-2 border-line-strong">
                   <PostBody

@@ -7,11 +7,12 @@ import type { Event, SimplePool } from "nostr-tools";
 interface EventStore {
   events: Map<string, Event>;
   fetching: Set<string>;
-  fetchEvents: (pool: SimplePool, ids: string[]) => void;
+  fetchEvents: (pool: SimplePool, ids: string[], relayHints?: string[]) => void;
 }
 
 // Batch event IDs arriving within 150ms into a single subscription
 let pendingIds: string[] = [];
+let pendingHints: string[] = [];
 let batchPool: SimplePool | null = null;
 let batchTimer: ReturnType<typeof setTimeout> | null = null;
 let storeSet: ((fn: (s: EventStore) => Partial<EventStore>) => void) | null = null;
@@ -28,6 +29,9 @@ function flushBatch() {
   }
 
   const toFetch = pendingIds.splice(0);
+  // NIP-10 relay hints: the reply's e-tag often names a relay that has the
+  // parent even when the user's own relays don't
+  const hints = [...new Set(pendingHints.splice(0))].filter((h) => !relays.includes(h));
   const pool = batchPool;
   batchPool = null;
 
@@ -44,7 +48,7 @@ function flushBatch() {
     sub.close();
   }
 
-  const sub = pool.subscribeMany(relays, [{ ids: toFetch, kinds: [1] }], {
+  const sub = pool.subscribeMany([...relays, ...hints], [{ ids: toFetch }], {
     onevent(event: Event) {
       set((s) => {
         const next = new Map(s.events);
@@ -67,7 +71,7 @@ export const useEvents = create<EventStore>((set, get) => {
     events: new Map(),
     fetching: new Set(),
 
-    fetchEvents: (pool: SimplePool, ids: string[]) => {
+    fetchEvents: (pool: SimplePool, ids: string[], relayHints?: string[]) => {
       const { events, fetching } = get();
       const missing = ids.filter((id) => !events.has(id) && !fetching.has(id));
       if (missing.length === 0) return;
@@ -79,6 +83,9 @@ export const useEvents = create<EventStore>((set, get) => {
       });
 
       pendingIds.push(...missing);
+      if (relayHints) {
+        pendingHints.push(...relayHints.filter((h) => h.startsWith("wss://") || h.startsWith("ws://")));
+      }
       batchPool = pool;
 
       if (!batchTimer) {

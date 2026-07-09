@@ -14,13 +14,10 @@ interface Props {
 }
 
 // The direct parent being replied to (NIP-10: "reply" marker, fallback to "root", legacy: last e-tag)
-function getParentEventId(event: Event): string | null {
+// Returns the full tag so the relay hint (tag[2]) is available for the fetch
+function getParentTag(event: Event): string[] | null {
   const eTags = event.tags.filter((t) => t[0] === "e");
-  const replyTag = eTags.find((t) => t[3] === "reply");
-  if (replyTag) return replyTag[1];
-  const rootTag = eTags.find((t) => t[3] === "root");
-  if (rootTag) return rootTag[1];
-  return eTags.at(-1)?.[1] ?? null;
+  return eTags.find((t) => t[3] === "reply") ?? eTags.find((t) => t[3] === "root") ?? eTags.at(-1) ?? null;
 }
 
 // The thread root, for passing to ReplyButton so threading stays correct
@@ -40,7 +37,9 @@ export default function ResonanceItem({ event }: Props) {
   const fetchEvents = useEvents((s) => s.fetchEvents);
   const storedEvents = useEvents((s) => s.events);
 
-  const parentId = getParentEventId(event);
+  const parentTag = getParentTag(event);
+  const parentId = parentTag?.[1] ?? null;
+  const parentRelayHint = parentTag?.[2] || undefined;
   const rootId = getRootEventId(event);
 
   const parentEvent = parentId && parentId !== event.id ? (storedEvents.get(parentId) ?? null) : null;
@@ -50,25 +49,26 @@ export default function ResonanceItem({ event }: Props) {
     // Retry a few times while the parent is missing (failed fetches never
     // update the store, so deps alone would never re-trigger this effect);
     // the store's `fetching` set dedupes in-flight requests
-    fetchEvents(pool, [parentId]);
+    const hints = parentRelayHint ? [parentRelayHint] : undefined;
+    fetchEvents(pool, [parentId], hints);
     let attempts = 0;
     const timer = setInterval(() => {
       if (++attempts > 3) {
         clearInterval(timer);
         return;
       }
-      fetchEvents(pool, [parentId]);
+      fetchEvents(pool, [parentId], hints);
     }, 5000);
     return () => clearInterval(timer);
-  }, [parentId, event.id, parentEvent, pool, fetchEvents]);
+  }, [parentId, parentRelayHint, event.id, parentEvent, pool, fetchEvents]);
 
-  const hasParent = parentEvent && parentEvent.id !== event.id;
-
+  const expectsParent = !!parentId && parentId !== event.id;
+  const hasParent = !!parentEvent && parentEvent.id !== event.id;
 
   return (
     <li className="group/post flex flex-col gap-3 leading-relaxed pt-8 first:pt-0">
       {/* Parent: the message directly replied to */}
-      {hasParent && (
+      {hasParent ? (
         <div>
           <div className="mb-2">
             <UserMeta pubkey={parentEvent.pubkey} />
@@ -78,10 +78,16 @@ export default function ResonanceItem({ event }: Props) {
             timestamp={timestamp(parentEvent)}
           />
         </div>
-      )}
+      ) : expectsParent ? (
+        /* Placeholder: keeps the thread structure visible while the parent
+           is loading or when it isn't available on any reachable relay */
+        <p className="text-sm italic text-ink-faint font-[family-name:var(--font-inter)]">
+          Original post not available
+        </p>
+      ) : null}
 
       {/* The reply/mention: indented below parent */}
-      <div className={hasParent ? "pl-5 border-l border-line-strong/15" : ""}>
+      <div className={expectsParent ? "pl-5 border-l border-line-strong/15" : ""}>
         <div className="mb-2">
           <UserMeta pubkey={event.pubkey} />
         </div>
