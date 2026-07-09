@@ -177,9 +177,9 @@ export default function HashtagFeed({ tag, scrollable = true }: { tag: string; s
           No posts found for #{tag}.
         </p>
       )}
-      <ul ref={feedRef} className={scrollable ? "overflow-y-auto h-full pr-2 bg-bg" : "pr-2"}>
+      <ul ref={feedRef} className={scrollable ? "overflow-y-auto h-full pr-2" : "pr-2"}>
         {posts.map((event) => (
-          <li key={event.id} className="group/post relative z-10 leading-relaxed bg-bg pt-6 pb-6 first:pt-0 border-b-[0.5px] border-line last:border-b-0">
+          <li key={event.id} className="group/post relative z-10 leading-relaxed pt-6 pb-6 first:pt-0 border-b-[0.5px] border-line last:border-b-0">
             <div className="flex items-center justify-between gap-4 mb-2">
               <UserMeta pubkey={event.pubkey} />
               {event.pubkey !== myPubkey && !follows.includes(event.pubkey) && (

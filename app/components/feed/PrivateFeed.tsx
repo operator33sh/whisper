@@ -197,7 +197,7 @@ export default function PrivateFeed() {
           {displayEvents.map((event: Event) => {
             const isMinimized = event.tags.filter((t) => t[0] === "t").length > 8 && !expandedPosts.has(event.id);
             return (
-              <li key={event.id} className="group/post leading-relaxed bg-bg pt-8 pb-8 first:pt-0 border-b-[0.5px] border-line last:border-b-0">
+              <li key={event.id} className="group/post leading-relaxed pt-8 pb-8 first:pt-0 border-b-[0.5px] border-line last:border-b-0">
                 <div className="flex items-center justify-between gap-4 mb-2">
                   <UserMeta pubkey={event.pubkey} />
                   {event.pubkey !== myPubkey && (
