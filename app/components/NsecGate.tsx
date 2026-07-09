@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useRef } from "react";
+import { decode } from "nostr-tools/nip19";
 import ThemeToggle from "@/app/components/ui/ThemeToggle";
 
 const STORAGE_KEY = "whisper:nsec";
@@ -20,7 +21,7 @@ export function useNsec() {
 
 function LoginModal({ onLogin }: { onLogin: () => void }) {
   const [input, setInput] = useState("");
-  const [error, setError] = useState(false);
+  const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -29,8 +30,20 @@ function LoginModal({ onLogin }: { onLogin: () => void }) {
 
   function save() {
     const value = input.trim();
-    if (!value) { setError(true); return; }
-    localStorage.setItem(STORAGE_KEY, value);
+    if (!value) { setError("Voer je privésleutel in."); return; }
+    try {
+      const { type } = decode(value);
+      if (type !== "nsec") { setError("Ongeldig formaat — gebruik een nsec-sleutel (begint met nsec1)."); return; }
+    } catch {
+      setError("Ongeldig formaat — gebruik een nsec-sleutel (begint met nsec1).");
+      return;
+    }
+    try {
+      localStorage.setItem(STORAGE_KEY, value);
+    } catch {
+      setError("Opslaan mislukt — controleer of opslag is ingeschakeld in je browser.");
+      return;
+    }
     onLogin();
   }
 
@@ -76,7 +89,7 @@ function LoginModal({ onLogin }: { onLogin: () => void }) {
             ref={inputRef}
             type="password"
             value={input}
-            onChange={(e) => { setInput(e.target.value); setError(false); }}
+            onChange={(e) => { setInput(e.target.value); setError(""); }}
             onKeyDown={(e) => e.key === "Enter" && save()}
             placeholder="nsec..."
             className={`w-full border rounded px-4 py-2 text-sm font-[family-name:var(--font-inter)] bg-surface text-ink placeholder:text-ink-faint focus:outline-none transition-colors ${
@@ -87,7 +100,7 @@ function LoginModal({ onLogin }: { onLogin: () => void }) {
           />
           {error && (
             <span className="text-red-500 text-xs font-[family-name:var(--font-inter)]">
-              Please enter your private key.
+              {error}
             </span>
           )}
         </div>
