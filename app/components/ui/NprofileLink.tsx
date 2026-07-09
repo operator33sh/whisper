@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { decode, npubEncode } from "nostr-tools/nip19";
 import ProfileModal from "@/app/components/ui/ProfileModal";
 import { useProfiles } from "@/app/hooks/useProfiles";
@@ -44,7 +45,7 @@ export default function NprofileLink({ raw }: { raw: string }) {
         </svg>
         <span className="text-sm font-[family-name:var(--font-inter)]">{name}</span>
       </button>
-      {open && <ProfileModal pubkey={pk} onClose={() => setOpen(false)} />}
+      {open && createPortal(<ProfileModal pubkey={pk} onClose={() => setOpen(false)} />, document.body)}
     </>
   );
 }
