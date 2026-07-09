@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useRelays } from "@/app/hooks/useRelays";
+import { getReplyTarget } from "@/app/lib/replyTarget";
 import type { Event } from "nostr-tools";
 
 export function useReplyCounts(eventIds: string[]): { counts: Map<string, number>; loading: boolean } {
@@ -47,9 +48,8 @@ export function useReplyCounts(eventIds: string[]): { counts: Map<string, number
           if (cancelled) return;
           if (seenReplies.current.has(event.id)) return;
           seenReplies.current.add(event.id);
-          const eTags = event.tags.filter((t) => t[0] === "e");
-          if (eTags.length === 0) return;
-          const targetId = eTags.at(-1)![1];
+          const targetId = getReplyTarget(event);
+          if (!targetId) return;
           setCounts((prev) => {
             const next = new Map(prev);
             next.set(targetId, (next.get(targetId) ?? 0) + 1);

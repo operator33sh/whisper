@@ -6,6 +6,7 @@ import { useFollows } from "@/app/hooks/useFollows";
 import { useRelays } from "@/app/hooks/useRelays";
 import { useOptimisticReplyCounts } from "@/app/hooks/useOptimisticReplyCounts";
 import { timeAgo } from "@/app/lib/timeAgo";
+import { getReplyTarget } from "@/app/lib/replyTarget";
 import PostBody from "@/app/components/ui/PostBody";
 import UserMeta from "@/app/components/ui/UserMeta";
 import ReplyButton from "@/app/components/ui/ReplyButton";
@@ -53,15 +54,6 @@ function FollowToggle({ pubkey }: { pubkey: string }) {
   );
 }
 
-function isDirectReply(event: Event, parentId: string): boolean {
-  const eTags = event.tags.filter(t => t[0] === "e");
-  const replyTag = eTags.find(t => t[3] === "reply");
-  if (replyTag) return replyTag[1] === parentId;
-  const rootTag = eTags.find(t => t[3] === "root");
-  if (rootTag) return rootTag[1] === parentId;
-  // legacy: last e tag is the direct parent
-  return eTags.at(-1)?.[1] === parentId;
-}
 
 export default function PostReplies({ eventId, count, replyCounts, rootEventId }: Props) {
   const root = rootEventId ?? eventId;
@@ -72,21 +64,24 @@ export default function PostReplies({ eventId, count, replyCounts, rootEventId }
   const [expanded, setExpanded] = useState(false);
   const [fetchKey, setFetchKey] = useState(0);
   const [replies, setReplies] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!expanded) return;
 
     setReplies([]);
+    setLoading(true);
     const filter: Filter = { kinds: [1], "#e": [eventId], limit: 50 };
     const sub = pool.subscribeMany(relays, [filter], {
       onevent(event: Event) {
-        if (!isDirectReply(event, eventId)) return;
+        if (getReplyTarget(event) !== eventId) return;
         setReplies((prev) => {
           if (prev.find((e) => e.id === event.id)) return prev;
           return [event, ...prev].sort((a, b) => b.created_at - a.created_at);
         });
       },
       oneose() {
+        setLoading(false);
         sub.close();
       },
     });
@@ -117,7 +112,9 @@ export default function PostReplies({ eventId, count, replyCounts, rootEventId }
       {expanded && (
         <ul className="mt-4 space-y-4 pl-4 border-l border-line-strong">
           {replies.length === 0 ? (
-            <li className="text-sm text-ink-faint font-[family-name:var(--font-inter)]">Loading…</li>
+            <li className="text-sm text-ink-faint font-[family-name:var(--font-inter)]">
+              {loading ? "Loading…" : "No replies found"}
+            </li>
           ) : (
             replies.map((reply) => {
               const replyCount = replyCounts?.get(reply.id) ?? 0;

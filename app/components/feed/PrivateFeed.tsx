@@ -5,6 +5,7 @@ import { useFollows, getNsecPubkey } from "@/app/hooks/useFollows";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useReplyCounts } from "@/app/hooks/useReplyCounts";
 import { timeAgo } from "@/app/lib/timeAgo";
+import { getReplyTarget } from "@/app/lib/replyTarget";
 import { useRelays } from "@/app/hooks/useRelays";
 import PostReplies from "@/app/components/ui/PostReplies";
 import ReplyButton from "@/app/components/ui/ReplyButton";
@@ -98,7 +99,7 @@ export default function PrivateFeed() {
         if (!event.tags.some((t) => t[0] === "e")) return;
         if (seenLiveReplies.current.has(event.id)) return;
         seenLiveReplies.current.add(event.id);
-        const eTag = event.tags.filter((t) => t[0] === "e").at(-1)?.[1];
+        const eTag = getReplyTarget(event);
         if (!eTag) return;
         if (!eventsRef.current.find((e) => e.id === eTag)) return;
         setLiveReplyCounts((prev) => {

@@ -7,6 +7,7 @@ import { useRelays } from "@/app/hooks/useRelays";
 import PostBody from "@/app/components/ui/PostBody";
 import UserMeta from "@/app/components/ui/UserMeta";
 import { timeAgo } from "@/app/lib/timeAgo";
+import { getReplyTarget } from "@/app/lib/replyTarget";
 import PostReplies from "@/app/components/ui/PostReplies";
 import ReplyButton from "@/app/components/ui/ReplyButton";
 import type { Event } from "nostr-tools";
@@ -57,7 +58,7 @@ export default function PublicFeed() {
         onevent(event: Event) {
           if (seenReplies.current.has(event.id)) return;
           seenReplies.current.add(event.id);
-          const eTag = event.tags.filter((t) => t[0] === "e").at(-1)?.[1];
+          const eTag = getReplyTarget(event);
           if (!eTag) return;
           console.log(`[PublicFeed] reply counted for post ${eTag.slice(0, 8)}...`);
           setReplyCounts((prev) => {
@@ -134,7 +135,7 @@ export default function PublicFeed() {
           // It's a reply — update count for the parent post
           if (seenReplies.current.has(event.id)) return;
           seenReplies.current.add(event.id);
-          const eTag = event.tags.filter((t) => t[0] === "e").at(-1)?.[1];
+          const eTag = getReplyTarget(event);
           if (!eTag) return;
           console.log(`[PublicFeed] live reply for post ${eTag.slice(0, 8)}...`);
           setReplyCounts((prev) => {
