@@ -3,11 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import PostContent from "@/app/components/ui/PostContent";
 
-const IMAGE_REGEX = /https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|avif)(?:\?\S*)?/i;
-const VIDEO_REGEX = /https?:\/\/\S+\.(?:mp4|webm|mov|ogg)(?:\?\S*)?/i;
-const YOUTUBE_REGEX = /https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)[\w-]+/i;
-const EMBED_REGEX = /nostr:(?:nevent|note)1[a-z0-9]+/;
-
 interface Props {
   content: string;
   timestamp: string;
@@ -19,11 +14,6 @@ export default function PostBody({ content, timestamp, action }: Props) {
   const [truncated, setTruncated] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  const hasImage = IMAGE_REGEX.test(content);
-  const hasVideo = VIDEO_REGEX.test(content);
-  const hasYouTube = YOUTUBE_REGEX.test(content);
-  const hasEmbed = EMBED_REGEX.test(content);
-
   useEffect(() => {
     const el = ref.current;
     if (el && el.scrollHeight > el.clientHeight) {
@@ -31,17 +21,15 @@ export default function PostBody({ content, timestamp, action }: Props) {
     }
   }, [content]);
 
-  const canTruncate = !hasImage && !hasVideo && !hasYouTube && !hasEmbed;
-
   return (
     <div>
       <div
         ref={ref}
-        className={`text-[1.0625rem] leading-[1.75] ${canTruncate && !expanded ? "line-clamp-8" : ""}`}
+        className={`text-[1.0625rem] leading-[1.75] ${!expanded ? "line-clamp-8" : ""}`}
       >
         <PostContent content={content} />
       </div>
-      {truncated && canTruncate && (
+      {truncated && (
         <div className="flex justify-end">
           <button
             onClick={() => setExpanded((v) => !v)}
