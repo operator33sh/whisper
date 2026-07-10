@@ -229,21 +229,18 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               </div>
             )}
           </main>
+          <footer className="shrink-0 py-2 text-center transition-colors duration-300">
+            <p className="text-[10px] text-ink-faint font-[family-name:var(--font-inter)] transition-colors duration-300">
+              <span className="select-text">operator33.sh@proton.me</span>
+              {" · "}
+              <span className="select-text">bitcoincash:qq3u8k4afsw35rcrnkg6vaf20et57fsdd5n9r5g0py</span>
+            </p>
+          </footer>
         </div>
       </div>
 
       {settingsOpen && <RelaySettings onClose={() => setSettingsOpen(false)} />}
       {profileOpen && myPubkey && <ProfileModal pubkey={myPubkey} onClose={() => setProfileOpen(false)} isSelf />}
-
-      <footer className="fixed bottom-0 left-16 right-0 py-2 bg-bg pointer-events-none [transition:background-color_0.8s_ease,color_0.8s_ease]">
-        <div className="w-[928px] mx-auto px-6 text-center">
-          <p className="text-[10px] text-ink-faint font-[family-name:var(--font-inter)]">
-            <span className="pointer-events-auto select-text">operator33.sh@proton.me</span>
-            {" · "}
-            <span className="pointer-events-auto select-text">bitcoincash:qq3u8k4afsw35rcrnkg6vaf20et57fsdd5n9r5g0py</span>
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
