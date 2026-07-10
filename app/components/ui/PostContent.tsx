@@ -77,7 +77,9 @@ function renderTextWithLinks(text: string, keyPrefix: string) {
 
 export default function PostContent({ content }: { content: string }) {
   const [lightbox, setLightbox] = useState<string | null>(null);
-  const neventChunks = content.split(NEVENT_REGEX);
+  // Collapse runs of blank lines into a single newline and trim edges
+  const normalized = content.replace(/\n\s*\n+/g, "\n").trim();
+  const neventChunks = normalized.split(NEVENT_REGEX);
 
   return (
     <div className="break-words min-w-0 space-y-2 whitespace-pre-wrap">
