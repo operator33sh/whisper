@@ -135,7 +135,12 @@ export default function PostContent({ content }: { content: string }) {
                 />
               );
             }
-            return part ? <span key={`${ci}-${yi}-${i}`}>{renderTextWithLinks(part, `${ci}-${yi}-${i}`)}</span> : null;
+            if (!part) return null;
+            return part.split("\n\n").map((para, pi) => (
+              <span key={`${ci}-${yi}-${i}-p${pi}`} className={pi > 0 ? "block mt-2" : undefined}>
+                {renderTextWithLinks(para, `${ci}-${yi}-${i}-p${pi}`)}
+              </span>
+            ));
           });
         });
       })}
