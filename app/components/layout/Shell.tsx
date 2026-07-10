@@ -235,7 +235,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       {settingsOpen && <RelaySettings onClose={() => setSettingsOpen(false)} />}
       {profileOpen && myPubkey && <ProfileModal pubkey={myPubkey} onClose={() => setProfileOpen(false)} isSelf />}
 
-      <footer className="fixed bottom-0 left-16 right-0 py-2 bg-bg pointer-events-none">
+      <footer className="fixed bottom-0 left-16 right-0 py-2 bg-bg pointer-events-none [transition:background-color_0.8s_ease,color_0.8s_ease]">
         <div className="w-[928px] mx-auto px-6 text-center">
           <p className="text-[10px] text-ink-faint font-[family-name:var(--font-inter)]">
             <span className="pointer-events-auto select-text">operator33.sh@proton.me</span>
