@@ -11,6 +11,9 @@ interface Store {
 
 function initialTheme(): Theme {
   if (typeof window === "undefined") return "light";
+  // De inline script in layout.tsx heeft de dark-class al correct gezet
+  // op basis van localStorage — gebruik die als bron van waarheid.
+  if (document.documentElement.classList.contains("dark")) return "dark";
   try {
     return localStorage.getItem("whisper:theme") === "dark" ? "dark" : "light";
   } catch {

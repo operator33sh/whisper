@@ -140,7 +140,7 @@ export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props
       );
 
       await Promise.any(pool.publish(relays, event));
-      increment(eventId);
+      increment(eventId, event.id);
       setText("");
       setOpen(false);
     } catch (e) {
