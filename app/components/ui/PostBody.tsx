@@ -16,9 +16,15 @@ export default function PostBody({ content, timestamp, action }: Props) {
 
   useEffect(() => {
     const el = ref.current;
-    if (el && el.scrollHeight > el.clientHeight) {
-      setTruncated(true);
-    }
+    if (!el) return;
+    const check = () => {
+      if (el.scrollHeight > el.clientHeight) setTruncated(true);
+    };
+    check();
+    // Embeds (quoted posts, images) load async and grow the content later
+    const observer = new ResizeObserver(check);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [content]);
 
   return (
