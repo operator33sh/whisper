@@ -1,10 +1,17 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTheme } from "@/app/hooks/useTheme";
 
 export default function ThemeToggle({ className = "" }: { className?: string }) {
   const theme = useTheme((s) => s.theme);
   const toggle = useTheme((s) => s.toggle);
+
+  // React hydration kan de door de inline script gezette dark-class op <html>
+  // verwijderen (server-HTML heeft hem niet). Zet hem na mount opnieuw.
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+  }, [theme]);
 
   return (
     <button
