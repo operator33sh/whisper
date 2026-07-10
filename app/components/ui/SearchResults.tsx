@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useRelays } from "@/app/hooks/useRelays";
 import { useReplyCounts } from "@/app/hooks/useReplyCounts";
@@ -27,6 +27,18 @@ export default function SearchResults({ query }: Props) {
   const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState<string | null>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+
+  useEffect(() => {
+    function handleWheel(e: WheelEvent) {
+      if (!listRef.current) return;
+      if (listRef.current.contains(e.target as Node)) return;
+      listRef.current.scrollBy({ top: e.deltaY });
+      e.preventDefault();
+    }
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    return () => window.removeEventListener("wheel", handleWheel);
+  }, []);
   const { counts: replyCounts } = useReplyCounts(results.map((e) => e.id));
 
   async function handleFollowToggle(pubkey: string) {
@@ -77,7 +89,7 @@ export default function SearchResults({ query }: Props) {
         {!loading && results.length === 0 && (
           <p className="text-ink-faint font-[family-name:var(--font-inter)] text-sm">No results.</p>
         )}
-        <ul className="overflow-y-auto h-full pr-2">
+        <ul ref={listRef} className="overflow-y-auto h-full pr-2">
           {results.map((event) => {
             const isMinimized = event.tags.filter((t) => t[0] === "t").length > 8 && !expandedPosts.has(event.id);
             return (
