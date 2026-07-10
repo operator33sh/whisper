@@ -32,7 +32,6 @@ export default function SearchResults({ query }: Props) {
   useEffect(() => {
     function handleWheel(e: WheelEvent) {
       if (!listRef.current) return;
-      if (listRef.current.contains(e.target as Node)) return;
       listRef.current.scrollBy({ top: e.deltaY });
       e.preventDefault();
     }
