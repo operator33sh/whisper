@@ -30,12 +30,12 @@ function LoginModal({ onLogin }: { onLogin: () => void }) {
 
   function save() {
     const value = input.trim();
-    if (!value) { setError("Voer je privésleutel in."); return; }
+    if (!value) { setError("Please enter your private key."); return; }
     try {
       const { type } = decode(value);
-      if (type !== "nsec") { setError("Ongeldig formaat — gebruik een nsec-sleutel (begint met nsec1)."); return; }
+      if (type !== "nsec") { setError("Invalid format — use an nsec key (starts with nsec1)."); return; }
     } catch {
-      setError("Ongeldig formaat — gebruik een nsec-sleutel (begint met nsec1).");
+      setError("Invalid format — use an nsec key (starts with nsec1).");
       return;
     }
     try {
