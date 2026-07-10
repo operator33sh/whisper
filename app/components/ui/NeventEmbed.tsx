@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { decode } from "nostr-tools/nip19";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useRelays } from "@/app/hooks/useRelays";
@@ -13,6 +13,9 @@ export default function NeventEmbed({ raw }: { raw: string }) {
   const relays = useRelays((s) => s.relays);
   const [event, setEvent] = useState<Event | null>(null);
   const [failed, setFailed] = useState(false);
+  const [truncated, setTruncated] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   let eventId: string | null = null;
   let relayHints: string[] = [];
@@ -47,20 +50,31 @@ export default function NeventEmbed({ raw }: { raw: string }) {
     return () => sub.close();
   }, [eventId]);
 
+  useEffect(() => {
+    const el = contentRef.current;
+    if (el && el.scrollHeight > el.clientHeight) setTruncated(true);
+  }, [event]);
+
   if (!eventId) return <span className="text-ink-faint text-sm">{raw}</span>;
   if (failed) return <span className="text-ink-faint text-sm italic">quoted post not found</span>;
   if (!event) return <span className="text-ink-faint text-sm italic">loading…</span>;
-
-  const hasMedia = /https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|avif|mp4|webm|mov|ogg)(?:\?\S*)?/i.test(event.content);
 
   return (
     <blockquote className="border border-line-strong/15 rounded px-3 pt-2 pb-3 my-1 text-sm text-ink/75 bg-ink/[0.02]">
       <div className="mb-1">
         <UserMeta pubkey={event.pubkey} />
       </div>
-      <div className={!hasMedia ? "overflow-hidden max-h-40" : undefined}>
+      <div ref={contentRef} className={!expanded ? "line-clamp-8" : ""}>
         <PostContent content={event.content} />
       </div>
+      {truncated && (
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-1 text-xs text-ink-faint hover:text-ink transition-colors font-[family-name:var(--font-inter)]"
+        >
+          {expanded ? "Show less" : "Read more"}
+        </button>
+      )}
     </blockquote>
   );
 }
