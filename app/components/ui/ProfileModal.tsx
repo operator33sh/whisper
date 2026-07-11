@@ -9,10 +9,7 @@ import { useRelays } from "@/app/hooks/useRelays";
 import Avatar from "@/app/components/ui/Avatar";
 import ProfileFeed from "@/app/components/ui/ProfileFeed";
 import { npubEncode } from "nostr-tools/nip19";
-import { finalizeEvent } from "nostr-tools";
-import { decode } from "nostr-tools/nip19";
-
-const STORAGE_KEY = "whisper:nsec";
+import { signEvent } from "@/app/lib/signer";
 
 const URL_REGEX = /(https?:\/\/[^\s]+)/g;
 
@@ -46,23 +43,21 @@ function useNostrUpload() {
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  function upload(file: File, onSuccess: (url: string) => void) {
-    const nsec = localStorage.getItem(STORAGE_KEY);
-    if (!nsec) { setError("Not logged in."); return; }
-    const { type, data: privateKey } = decode(nsec);
-    if (type !== "nsec") { setError("Invalid nsec."); return; }
-
+  async function upload(file: File, onSuccess: (url: string) => void) {
     const uploadUrl = "https://nostr.build/api/v2/upload/files";
-    const authEvent = finalizeEvent(
-      {
+    let authHeader: string;
+    try {
+      const authEvent = await signEvent({
         kind: 27235,
         created_at: Math.floor(Date.now() / 1000),
         tags: [["u", uploadUrl], ["method", "POST"]],
         content: "",
-      },
-      privateKey as Uint8Array
-    );
-    const authHeader = "Nostr " + btoa(JSON.stringify(authEvent));
+      });
+      authHeader = "Nostr " + btoa(JSON.stringify(authEvent));
+    } catch {
+      setError("Not logged in.");
+      return;
+    }
 
     setError(null);
     setProgress(0);
@@ -239,11 +234,6 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
   }
 
   async function saveProfile() {
-    const nsec = localStorage.getItem(STORAGE_KEY);
-    if (!nsec) { setSaveError("Not logged in."); return; }
-    const { type, data: privateKey } = decode(nsec);
-    if (type !== "nsec") { setSaveError("Invalid nsec."); return; }
-
     setSaving(true);
     setSaveError(null);
 
@@ -257,15 +247,12 @@ export default function ProfileModal({ pubkey, onClose, isSelf }: Props) {
         website: editWebsite,
       };
 
-      const event = finalizeEvent(
-        {
-          kind: 0,
-          created_at: Math.floor(Date.now() / 1000),
-          tags: [],
-          content: JSON.stringify(updatedProfile),
-        },
-        privateKey as Uint8Array
-      );
+      const event = await signEvent({
+        kind: 0,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [],
+        content: JSON.stringify(updatedProfile),
+      });
 
       await Promise.any(pool.publish(relays, event));
       setProfile(pubkey, updatedProfile);

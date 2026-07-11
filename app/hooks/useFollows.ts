@@ -2,11 +2,9 @@
 
 import { create } from "zustand";
 import { useRelays } from "@/app/hooks/useRelays";
-import { finalizeEvent, getPublicKey } from "nostr-tools";
-import { decode } from "nostr-tools/nip19";
+import { getPubkey, signEvent } from "@/app/lib/signer";
 import type { Event, SimplePool } from "nostr-tools";
 
-const STORAGE_KEY = "whisper:nsec";
 const FOLLOWS_CACHE_PREFIX = "whisper:follows:";
 
 interface FollowStore {
@@ -53,32 +51,17 @@ export const useFollows = create<FollowStore>((set, get) => ({
   },
 
   follow: async (pool: SimplePool, pubkey: string) => {
-    const nsec = localStorage.getItem(STORAGE_KEY);
-    if (!nsec) throw new Error("Not logged in");
-
-    let privateKey: Uint8Array;
-    try {
-      const decoded = decode(nsec);
-      if (decoded.type !== "nsec") throw new Error("Invalid nsec type");
-      privateKey = decoded.data as Uint8Array;
-    } catch (e) {
-      throw new Error(`Failed to decode nsec: ${e}`);
-    }
-
     const currentFollows = get().follows;
     if (currentFollows.includes(pubkey)) return;
 
     const updatedFollows = [...currentFollows, pubkey];
 
-    const event = finalizeEvent(
-      {
-        kind: 3,
-        created_at: Math.floor(Date.now() / 1000),
-        tags: updatedFollows.map((pk) => ["p", pk]),
-        content: "",
-      },
-      privateKey
-    );
+    const event = await signEvent({
+      kind: 3,
+      created_at: Math.floor(Date.now() / 1000),
+      tags: updatedFollows.map((pk) => ["p", pk]),
+      content: "",
+    });
 
     // Optimistic update before publish
     const pubkeyOwn = getNsecPubkey();
@@ -97,29 +80,14 @@ export const useFollows = create<FollowStore>((set, get) => ({
   },
 
   unfollow: async (pool: SimplePool, pubkey: string) => {
-    const nsec = localStorage.getItem(STORAGE_KEY);
-    if (!nsec) throw new Error("Not logged in");
-
-    let privateKey: Uint8Array;
-    try {
-      const decoded = decode(nsec);
-      if (decoded.type !== "nsec") throw new Error("Invalid nsec type");
-      privateKey = decoded.data as Uint8Array;
-    } catch (e) {
-      throw new Error(`Failed to decode nsec: ${e}`);
-    }
-
     const updatedFollows = get().follows.filter((f) => f !== pubkey);
 
-    const event = finalizeEvent(
-      {
-        kind: 3,
-        created_at: Math.floor(Date.now() / 1000),
-        tags: updatedFollows.map((pk) => ["p", pk]),
-        content: "",
-      },
-      privateKey
-    );
+    const event = await signEvent({
+      kind: 3,
+      created_at: Math.floor(Date.now() / 1000),
+      tags: updatedFollows.map((pk) => ["p", pk]),
+      content: "",
+    });
 
     // Optimistic update before publish
     const pubkeyOwn = getNsecPubkey();
@@ -138,15 +106,7 @@ export const useFollows = create<FollowStore>((set, get) => ({
   },
 }));
 
+/** Returns the logged-in user's pubkey regardless of login method. */
 export function getNsecPubkey(): string | null {
-  if (typeof window === "undefined") return null;
-  const nsec = localStorage.getItem(STORAGE_KEY);
-  if (!nsec) return null;
-  try {
-    const { type, data } = decode(nsec);
-    if (type !== "nsec") return null;
-    return getPublicKey(data as Uint8Array);
-  } catch {
-    return null;
-  }
+  return getPubkey();
 }

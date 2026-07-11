@@ -5,13 +5,10 @@ import { createPortal } from "react-dom";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useRelays } from "@/app/hooks/useRelays";
 import { useOptimisticReplyCounts } from "@/app/hooks/useOptimisticReplyCounts";
-import { finalizeEvent } from "nostr-tools";
-import { decode } from "nostr-tools/nip19";
+import { signEvent } from "@/app/lib/signer";
 import EmojiPicker from "@/app/components/ui/EmojiPicker";
 
 const UPLOAD_URL = "https://nostr.build/api/v2/upload/files";
-
-const STORAGE_KEY = "whisper:nsec";
 
 interface Props {
   eventId: string;
@@ -46,26 +43,24 @@ export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props
     });
   }
 
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = "";
 
-    const nsec = localStorage.getItem(STORAGE_KEY);
-    if (!nsec) { setUploadError("Not logged in."); return; }
-    const { type, data: privateKey } = decode(nsec);
-    if (type !== "nsec") { setUploadError("Invalid nsec."); return; }
-
-    const authEvent = finalizeEvent(
-      {
+    let authHeader: string;
+    try {
+      const authEvent = await signEvent({
         kind: 27235,
         created_at: Math.floor(Date.now() / 1000),
         tags: [["u", UPLOAD_URL], ["method", "POST"]],
         content: "",
-      },
-      privateKey as Uint8Array
-    );
-    const authHeader = "Nostr " + btoa(JSON.stringify(authEvent));
+      });
+      authHeader = "Nostr " + btoa(JSON.stringify(authEvent));
+    } catch {
+      setUploadError("Not logged in.");
+      return;
+    }
 
     setUploadError(null);
     setUploadProgress(0);
@@ -114,12 +109,6 @@ export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props
   }
 
   async function submit() {
-    const nsec = localStorage.getItem(STORAGE_KEY);
-    if (!nsec) { setError("Not logged in"); return; }
-
-    const { type, data: privateKey } = decode(nsec);
-    if (type !== "nsec") { setError("Invalid nsec"); return; }
-
     const content = text.trim();
     if (!content) return;
 
@@ -127,17 +116,14 @@ export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props
     setError(null);
 
     try {
-      const event = finalizeEvent(
-        {
-          kind: 1,
-          created_at: Math.floor(Date.now() / 1000),
-          tags: rootEventId && rootEventId !== eventId
-            ? [["e", rootEventId, "", "root"], ["e", eventId, "", "reply"], ["p", eventPubkey]]
-            : [["e", eventId, "", "root"], ["p", eventPubkey]],
-          content,
-        },
-        privateKey as Uint8Array
-      );
+      const event = await signEvent({
+        kind: 1,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: rootEventId && rootEventId !== eventId
+          ? [["e", rootEventId, "", "root"], ["e", eventId, "", "reply"], ["p", eventPubkey]]
+          : [["e", eventId, "", "root"], ["p", eventPubkey]],
+        content,
+      });
 
       await Promise.any(pool.publish(relays, event));
       increment(eventId, event.id);

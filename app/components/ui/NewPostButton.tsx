@@ -3,11 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useRelays } from "@/app/hooks/useRelays";
-import { finalizeEvent } from "nostr-tools";
-import { decode } from "nostr-tools/nip19";
+import { signEvent } from "@/app/lib/signer";
 import EmojiPicker from "@/app/components/ui/EmojiPicker";
-
-const STORAGE_KEY = "whisper:nsec";
 
 export default function NewPostButton() {
   const { pool } = useNostrContext();
@@ -39,31 +36,26 @@ export default function NewPostButton() {
   }, [open]);
   const [error, setError] = useState<string | null>(null);
 
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = "";
 
-    const nsec = localStorage.getItem(STORAGE_KEY);
-    if (!nsec) { setUploadError("Not logged in."); return; }
-    const { type, data: privateKey } = decode(nsec);
-    if (type !== "nsec") { setUploadError("Invalid nsec."); return; }
-
     const uploadUrl = "https://nostr.build/api/v2/upload/files";
 
-    const authEvent = finalizeEvent(
-      {
+    let authHeader: string;
+    try {
+      const authEvent = await signEvent({
         kind: 27235,
         created_at: Math.floor(Date.now() / 1000),
-        tags: [
-          ["u", uploadUrl],
-          ["method", "POST"],
-        ],
+        tags: [["u", uploadUrl], ["method", "POST"]],
         content: "",
-      },
-      privateKey as Uint8Array
-    );
-    const authHeader = "Nostr " + btoa(JSON.stringify(authEvent));
+      });
+      authHeader = "Nostr " + btoa(JSON.stringify(authEvent));
+    } catch {
+      setUploadError("Not logged in.");
+      return;
+    }
 
     setUploadError(null);
     setUploadProgress(0);
@@ -112,12 +104,6 @@ export default function NewPostButton() {
   }
 
   async function submit() {
-    const nsec = localStorage.getItem(STORAGE_KEY);
-    if (!nsec) { setError("Not logged in"); return; }
-
-    const { type, data: privateKey } = decode(nsec);
-    if (type !== "nsec") { setError("Invalid nsec"); return; }
-
     const content = text.trim();
     if (!content) return;
 
@@ -125,15 +111,12 @@ export default function NewPostButton() {
     setError(null);
 
     try {
-      const event = finalizeEvent(
-        {
-          kind: 1,
-          created_at: Math.floor(Date.now() / 1000),
-          tags: [],
-          content,
-        },
-        privateKey as Uint8Array
-      );
+      const event = await signEvent({
+        kind: 1,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [],
+        content,
+      });
 
       await Promise.any(pool.publish(relays, event));
       setText("");
