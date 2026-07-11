@@ -101,7 +101,7 @@ function LoginModal({ onLogin }: { onLogin: () => void }) {
           </svg>
         </div>
 
-        {extensionAvailable && (
+        {extensionAvailable ? (
           <button
             onClick={loginWithExtension}
             className="flex items-center justify-center gap-2 w-full border border-line-strong text-sm px-4 py-2.5 rounded font-[family-name:var(--font-inter)] hover:opacity-80 transition-opacity"
@@ -112,6 +112,19 @@ function LoginModal({ onLogin }: { onLogin: () => void }) {
             </svg>
             Login with Extension
           </button>
+        ) : (
+          <a
+            href="https://getalby.com/alby-extension"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full border border-line text-sm px-4 py-2.5 rounded font-[family-name:var(--font-inter)] text-ink-soft hover:text-ink hover:border-line-strong transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Get Alby Extension
+          </a>
         )}
 
         <div className="flex items-center justify-between">
