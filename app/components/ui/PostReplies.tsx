@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useFollows } from "@/app/hooks/useFollows";
 import { useRelays } from "@/app/hooks/useRelays";
 import { useOptimisticReplyCounts } from "@/app/hooks/useOptimisticReplyCounts";
+import { useAccurateReplyCounts, requestAccurateReplyCount } from "@/app/hooks/useAccurateReplyCounts";
 import { timeAgo } from "@/app/lib/timeAgo";
 import { getReplyTarget } from "@/app/lib/replyTarget";
 import PostBody from "@/app/components/ui/PostBody";
@@ -60,8 +61,24 @@ export default function PostReplies({ eventId, count, replyCounts, rootEventId }
   const { pool } = useNostrContext();
   const relays = useRelays((s) => s.relays);
   const optimistic = useOptimisticReplyCounts((s) => s.increments.get(eventId) ?? 0);
-  const displayCount = count + optimistic;
+  const accurate = useAccurateReplyCounts((s) => s.counts.get(eventId));
+  // max: COUNT corrigeert te lage sub-tellingen; optimistic +1 wint als COUNT
+  // vóór de eigen reply liep (COUNT ná publish telt de eigen reply al mee)
+  const displayCount = Math.max(count + optimistic, accurate ?? 0);
   const [expanded, setExpanded] = useState(false);
+  const anchorRef = useRef<HTMLDivElement>(null);
+
+  // Viewport-triggered NIP-45 COUNT for an accurate count
+  useEffect(() => {
+    const el = anchorRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) requestAccurateReplyCount(pool, relays, eventId);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId, pool, relays.join(",")]);
   const [fetchKey, setFetchKey] = useState(0);
   const [replies, setReplies] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
@@ -89,11 +106,12 @@ export default function PostReplies({ eventId, count, replyCounts, rootEventId }
     return () => sub.close();
   }, [expanded, fetchKey, eventId, pool]);
 
-  // nul is stilte: geen "0 replies"-regel
-  if (displayCount === 0 && !expanded) return null;
+  // nul is stilte: geen "0 replies"-regel — maar de anchor blijft gemount
+  // zodat de viewport-COUNT een te lage telling alsnog kan corrigeren
+  if (displayCount === 0 && !expanded) return <div ref={anchorRef} />;
 
   return (
-    <div className="mt-2">
+    <div ref={anchorRef} className="mt-2">
       <button
         onClick={() => {
           if (expanded) {
