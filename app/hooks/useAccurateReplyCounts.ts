@@ -67,6 +67,19 @@ async function processQueue() {
   }
 }
 
+// Call this after publishing a reply so the cached COUNT is invalidated and
+// the next viewport intersection triggers a fresh fetch.
+// Call this after publishing a reply so the cached COUNT is invalidated and
+// the next viewport intersection triggers a fresh fetch.
+export function invalidateAccurateReplyCount(eventId: string) {
+  fetchedAt.delete(eventId);
+  useAccurateReplyCounts.setState((s) => {
+    const next = new Map(s.counts);
+    next.delete(eventId);
+    return { counts: next };
+  });
+}
+
 export function requestAccurateReplyCount(pool: SimplePool, relays: string[], eventId: string) {
   poolRef = pool;
   relaysRef = relays;

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useNostrContext } from "@/app/components/NostrProvider";
 import { useRelays } from "@/app/hooks/useRelays";
 import { useOptimisticReplyCounts } from "@/app/hooks/useOptimisticReplyCounts";
+import { invalidateAccurateReplyCount, requestAccurateReplyCount } from "@/app/hooks/useAccurateReplyCounts";
 import { signEvent } from "@/app/lib/signer";
 import EmojiPicker from "@/app/components/ui/EmojiPicker";
 
@@ -127,6 +128,9 @@ export default function ReplyButton({ eventId, eventPubkey, rootEventId }: Props
 
       await Promise.any(pool.publish(relays, event));
       increment(eventId, event.id);
+      invalidateAccurateReplyCount(eventId);
+      // Re-fetch COUNT after relay has had time to index the new reply
+      setTimeout(() => requestAccurateReplyCount(pool, relays, eventId), 2500);
       setText("");
       setOpen(false);
     } catch (e) {
