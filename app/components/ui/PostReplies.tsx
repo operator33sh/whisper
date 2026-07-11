@@ -62,9 +62,12 @@ export default function PostReplies({ eventId, count, replyCounts, rootEventId }
   const relays = useRelays((s) => s.relays);
   const optimistic = useOptimisticReplyCounts((s) => s.increments.get(eventId) ?? 0);
   const accurate = useAccurateReplyCounts((s) => s.counts.get(eventId));
-  // max: COUNT corrigeert te lage sub-tellingen; optimistic +1 wint als COUNT
-  // vóór de eigen reply liep (COUNT ná publish telt de eigen reply al mee)
-  const displayCount = Math.max(count + optimistic, accurate ?? 0);
+  // Als COUNT beschikbaar is, is het de grondwaarheid (telt eigen reply al mee
+  // als die de relay bereikte). Optimistic er bovenop tellen zou dubbel tellen.
+  // Zonder COUNT: gebruik sub-telling + optimistic zodat eigen reply direct zichtbaar is.
+  const displayCount = accurate !== undefined
+    ? Math.max(accurate, count)
+    : count + optimistic;
   const [expanded, setExpanded] = useState(false);
   const anchorRef = useRef<HTMLDivElement>(null);
 
