@@ -15,6 +15,8 @@ export default function RelaySettings({ onClose }: Props) {
   const { pool } = useNostrContext();
   const [input, setInput] = useState("");
   const [poolStatus, setPoolStatus] = useState<Map<string, boolean>>(new Map());
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkInput, setBulkInput] = useState("");
 
   function normalize(url: string): string {
     try {
@@ -44,11 +46,18 @@ export default function RelaySettings({ onClose }: Props) {
     setInput("");
   }
 
+  function handleBulkAdd() {
+    const lines = bulkInput.split(/[\n,]+/).map((l) => l.trim()).filter(Boolean);
+    lines.forEach((r) => addRelay(r));
+    setBulkInput("");
+    setShowBulkModal(false);
+  }
+
   const connectedCount = relays.filter((r) => poolStatus.get(normalize(r))).length;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-bg rounded-lg p-8 w-full max-w-md flex flex-col gap-6">
+      <div className="bg-bg rounded-lg p-8 w-full max-w-md flex flex-col gap-6 max-h-[80vh]">
         <div>
           <h2 className="text-xl font-semibold">Relays</h2>
           <p className="mt-1 text-xs text-ink-faint font-[family-name:var(--font-inter)]">
@@ -56,7 +65,7 @@ export default function RelaySettings({ onClose }: Props) {
           </p>
         </div>
 
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col gap-3 overflow-y-auto">
           {relays.map((relay) => {
             const isConnected = poolStatus.get(normalize(relay)) ?? false;
             return (
@@ -79,22 +88,75 @@ export default function RelaySettings({ onClose }: Props) {
           })}
         </ul>
 
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-            placeholder="wss://relay.example.com"
-            className="flex-1 border border-line-strong rounded px-3 py-2 text-sm font-[family-name:var(--font-inter)] bg-surface focus:outline-none focus:border-ink"
-          />
-          <button
-            onClick={handleAdd}
-            className="bg-ink text-bg text-sm px-4 py-2 rounded font-[family-name:var(--font-inter)] hover:opacity-90 transition-colors"
-          >
-            Add
-          </button>
+        <div className="flex flex-col gap-1">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+              placeholder="wss://relay.example.com"
+              className="flex-1 border border-line-strong rounded px-3 py-2 text-sm font-[family-name:var(--font-inter)] bg-surface focus:outline-none focus:border-ink"
+            />
+            <button
+              onClick={handleAdd}
+              className="bg-ink text-bg text-sm px-4 py-2 rounded font-[family-name:var(--font-inter)] hover:opacity-90 transition-colors"
+            >
+              Add
+            </button>
+          </div>
+          <div className="flex flex-col items-end gap-0.5">
+            <button
+              onClick={() => setShowBulkModal(true)}
+              className="text-xs text-ink-faint hover:text-ink transition-colors font-[family-name:var(--font-inter)] underline"
+            >
+              Add relay list
+            </button>
+            <button
+              onClick={() => {
+                relays
+                  .filter((r) => !poolStatus.get(normalize(r)))
+                  .forEach((r) => removeRelay(r));
+              }}
+              className="text-xs text-ink-faint hover:text-ink transition-colors font-[family-name:var(--font-inter)] underline"
+            >
+              Remove offline relays
+            </button>
+          </div>
         </div>
+
+        {showBulkModal && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-60">
+            <div className="bg-bg rounded-lg p-6 w-full max-w-sm flex flex-col gap-4">
+              <h3 className="text-base font-semibold">Add relay list</h3>
+              <p className="text-xs text-ink-faint font-[family-name:var(--font-inter)]">
+                Paste one relay URL per line.
+              </p>
+              <textarea
+                autoFocus
+                value={bulkInput}
+                onChange={(e) => setBulkInput(e.target.value)}
+                rows={8}
+                placeholder={"wss://relay.damus.io\nwss://relay.nostr.band"}
+                className="border border-line-strong rounded px-3 py-2 text-sm font-[family-name:var(--font-inter)] bg-surface focus:outline-none focus:border-ink resize-none"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => { setShowBulkModal(false); setBulkInput(""); }}
+                  className="text-sm px-4 py-2 font-[family-name:var(--font-inter)] text-ink-soft hover:text-ink transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleBulkAdd}
+                  className="bg-ink text-bg text-sm px-4 py-2 rounded font-[family-name:var(--font-inter)] hover:opacity-90 transition-colors"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex justify-end">
           <button
