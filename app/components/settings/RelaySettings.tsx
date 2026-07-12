@@ -65,7 +65,7 @@ export default function RelaySettings({ onClose }: Props) {
           </p>
         </div>
 
-        <ul className="flex flex-col gap-3 overflow-y-auto">
+        <ul className="flex flex-col gap-3 overflow-y-auto" onWheel={(e) => e.stopPropagation()}>
           {relays.map((relay) => {
             const isConnected = poolStatus.get(normalize(relay)) ?? false;
             return (
